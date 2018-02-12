@@ -1,0 +1,99 @@
+#!/bin/sh
+set -e
+
+# helper functions
+msg() { echo -e "\e[32mINFO ---> $1\e[0m"; }
+err() { echo -e "\e[31mERR ---> $1\e[0m" ; exit 1; }
+
+# process repo contexts
+processRepoContexts() {
+	local vars=$(env | awk -F '=' '{print $1}' | grep -iE "^CF_CTX_[^_]+_URL")
+
+	for var in $vars
+	do
+		local varValue=$(eval "echo \$$var")
+		local repoName=$(echo $var | sed -rn 's/^CF_CTX_([^_]+)_URL.*/\1/p')
+		msg "adding repo $repoName : $varValue"
+		helm repo add $repoName $varValue
+		msg "REPO_URL set to $varValue"
+		CHART_REPO_URL=$varValue
+	done
+}
+
+# process custom variables
+processCustomVals() {
+	local resultedArgs=""
+	
+	local vars=$(env | awk -F '=' '{print $1}' | grep -i "^customFile_")
+	for var in $vars
+	do
+		local varValue=$(eval "echo \$$var")
+		resultedArgs="$resultedArgs --values $varValue"
+	done
+
+	local vars=$(env | awk -F '=' '{print $1}' | grep -i "^custom_")
+	for var in $vars
+	do
+		local varName=$(echo $var | sed 's/^custom_//gI' | sed 's/_/./g' | sed 's/\.\./_/g')
+		local varValue=$(eval "echo \$$var")
+		resultedArgs="$resultedArgs --set $varName=$varValue"
+	done
+
+	echo "$resultedArgs"
+}
+
+
+# get chart name (required)
+if [ -z "$CHART_NAME" ]; then
+  err "Please, specify Helm Chart with CHART_NAME environment variable"
+  exit 1
+fi
+chart="${CHART_NAME}"
+
+# get release name (required)
+#TODO: optional
+if [ -z "$RELEASE_NAME" ]; then
+  err "Please, specify Helm Release name with RELEASE_NAME environment variable"
+  exit 1
+fi
+release="${RELEASE_NAME}"
+
+#TODO: optional
+if [ -z "$KUBE_CONTEXT" ]; then
+  err "Please, set Kubernetes context. Use name from Codefresh Integrations page."
+else
+  msg "Using ${KUBE_CONTEXT} context"
+  kubectl config use-context ${KUBE_CONTEXT}
+fi
+
+customVals=$(processCustomVals)
+processRepoContexts
+
+# target namespace
+# TODO: leave it to helm to choose deafult ns
+# TODO: take from context
+if [ ! -z "${NAMESPACE}" ]; then
+namespace="--namespace=${NAMESPACE}"
+fi
+
+# TILLER_NAMESPACE is set as env var to helm.
+# TODO: take from context
+
+# set chart version flag
+if [ ! -z "${CHART_VERSION}" ]; then
+  version="--version ${CHART_VERSION}"
+fi
+
+# set chart repo flag
+if [ ! -z "${CHART_REPO_URL}" ]; then
+  repoUrl="--repo ${CHART_REPO_URL}"
+fi
+
+msg "Upgrading dependencies"
+helm dep up
+
+msg "Installing chart"
+helmCmd="helm upgrade $release $chart --install $repoUrl $version $customFlags --force --reset-values $namespace $customVals"
+
+msg "$helmCmd"
+eval "$helmCmd"
