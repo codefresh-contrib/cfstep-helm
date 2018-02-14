@@ -1,0 +1,13 @@
+version: '1.0'
+steps:
+  build:
+    type: build
+    image_name: codefresh/cfstep-helm
+    build_arguments:
+      - HELM_VERSION=${{HELM_VERSION}}
+    tag: ${{HELM_VERSION}}
+  push:
+    type: push
+    candidate: ${{build}}
+    registry: dockerhub
+    tag: ${{HELM_VERSION}}
