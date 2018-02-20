@@ -8,7 +8,7 @@ RUN curl -L "https://storage.googleapis.com/kubernetes-helm/helm-v${HELM_VERSION
     && helm plugin install https://github.com/hypnoglow/helm-s3.git 
 
 FROM codefresh/kube-helm:${HELM_VERSION}
-COPY --from=setup /root/.helm/* /root/.helm/
+COPY --from=setup /root/.helm/ /root/.helm/
 COPY bin/* /opt/bin/
 RUN chmod +x /opt/bin/*
 
