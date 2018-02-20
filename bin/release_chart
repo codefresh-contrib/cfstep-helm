@@ -86,10 +86,10 @@ fi
 # set chart repo flag
 if [ ! -z "${CHART_REPO_URL}" ]; then
   repoUrl="--repo ${CHART_REPO_URL}"
+else #if installing from local, "unpacked" chart, then restore dependencies first
+  msg "Building dependencies"
+  helm dependency build $chart
 fi
-
-msg "Building dependencies"
-helm dependency build $chart
 
 msg "Installing chart"
 helmCmd="helm upgrade $release $chart --install $repoUrl $version $customFlags --force --reset-values $namespace $customVals"
