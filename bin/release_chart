@@ -6,12 +6,12 @@ err() { echo -e "ERR---> $1" ; exit 1; }
 
 # process repo contexts
 processRepoContexts() {
-	local vars=$(env | awk -F '=' '{print $1}' | grep -iE "^CF_CTX_[^_]+_URL")
+	local vars=$(env | awk -F '=' '{print $1}' | grep -iE "^CF_CTX_[^_].+_URL")
 
 	for var in $vars
 	do
 		local varValue=$(eval "echo \$$var")
-		local repoName=$(echo $var | sed -rn 's/^CF_CTX_([^_]+)_URL.*/\1/p')
+		local repoName=$(echo $var | sed -rn 's/^CF_CTX_([^_].+)_URL.*/\1/p')
 		msg "adding repo $repoName : $varValue"
 		helm repo add $repoName $varValue
 		msg "REPO_URL set to $varValue"
