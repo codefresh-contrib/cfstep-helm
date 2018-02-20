@@ -1,9 +1,8 @@
 #!/bin/sh
 set -e
 
-# helper functions
-msg() { echo -e "\e[32mINFO ---> $1\e[0m"; }
-err() { echo -e "\e[31mERR ---> $1\e[0m" ; exit 1; }
+msg() { echo -e "INF---> $1"; }
+err() { echo -e "ERR---> $1" ; exit 1; }
 
 # process repo contexts
 processRepoContexts() {
@@ -89,8 +88,8 @@ if [ ! -z "${CHART_REPO_URL}" ]; then
   repoUrl="--repo ${CHART_REPO_URL}"
 fi
 
-msg "Upgrading dependencies"
-helm dep up
+msg "Building dependencies"
+helm dependency build $chart
 
 msg "Installing chart"
 helmCmd="helm upgrade $release $chart --install $repoUrl $version $customFlags --force --reset-values $namespace $customVals"
