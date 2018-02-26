@@ -41,6 +41,10 @@ processCustomVals() {
 	echo "$resultedArgs"
 }
 
+fixGcsContext() {
+	echo -E $GOOGLE_APPLICATION_CREDENTIALS_JSON > /tmp/google-creds.json
+	export GOOGLE_APPLICATION_CREDENTIALS="/tmp/google-creds.json"
+}
 
 # get chart name (required)
 if [ -z "$CHART_NAME" ]; then
@@ -66,7 +70,11 @@ else
 fi
 
 customVals=$(processCustomVals)
+# Workround for GCS. Should be fixed with new pluggable context
 processRepoContexts
+if [[ $REPO_URL == gs://* ]]; then
+	fixGcsContext
+fi
 
 # target namespace
 # TODO: leave it to helm to choose deafult ns
