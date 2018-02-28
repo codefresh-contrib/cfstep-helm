@@ -42,6 +42,7 @@ processCustomVals() {
 }
 
 fixGcsContext() {
+	msg "Adding Google creds variable"
 	echo -E $GOOGLE_APPLICATION_CREDENTIALS_JSON > /tmp/google-creds.json
 	export GOOGLE_APPLICATION_CREDENTIALS="/tmp/google-creds.json"
 }
@@ -70,11 +71,13 @@ else
 fi
 
 customVals=$(processCustomVals)
+
 # Workround for GCS. Should be fixed with new pluggable context
-processRepoContexts
-if [[ $REPO_URL == gs://* ]]; then
+if [ ! -z "${GOOGLE_APPLICATION_CREDENTIALS_JSON}"] ; then
 	fixGcsContext
 fi
+processRepoContexts
+
 
 # target namespace
 # TODO: leave it to helm to choose deafult ns
