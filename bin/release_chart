@@ -73,7 +73,7 @@ fi
 customVals=$(processCustomVals)
 
 # Workround for GCS. Should be fixed with new pluggable context
-if [ ! -z "${GOOGLE_APPLICATION_CREDENTIALS_JSON}"] ; then
+if [ ! -z "${GOOGLE_APPLICATION_CREDENTIALS_JSON}" ] ; then
 	fixGcsContext
 fi
 processRepoContexts
