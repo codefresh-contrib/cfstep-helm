@@ -12,6 +12,11 @@ processRepoContexts() {
 	do
 		local varValue=$(eval "echo \$$var")
 		local repoName=$(echo $var | sed -rn 's/^CF_CTX_([^_].+)_URL.*/\1/p')
+		# Handle basic auth
+		if [ ! -z "${HELMREPO_USERNAME}" ] ; then
+			msg "Adding basic auth to REPO URL"
+			varValue=$(echo $varValue | sed -rn 's/(https?:\/\/)(.*)/\1'"${HELMREPO_USERNAME}"':'"${HELMREPO_PASSWORD}"'@\2/p')
+		fi
 		msg "adding repo $repoName : $varValue"
 		helm repo add $repoName $varValue
 		msg "REPO_URL set to $varValue"
