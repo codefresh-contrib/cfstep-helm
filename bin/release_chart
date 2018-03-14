@@ -108,7 +108,7 @@ else #if installing from local, "unpacked" chart, then restore dependencies firs
 fi
 
 msg "Installing chart"
-helmCmd="helm upgrade $release $chart --install $repoUrl $version $customFlags --force --reset-values $namespace $customVals"
+helmCmd="helm upgrade $release $chart --install $repoUrl $version --force --reset-values $namespace $customVals $CMD_PS"
 
 msg "$helmCmd"
 eval "$helmCmd"
