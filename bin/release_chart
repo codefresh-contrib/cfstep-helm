@@ -126,7 +126,7 @@ then
 	esac
 else
 	msg "Installing chart"
-	helmCmd="helm upgrade $release $chart --install $repoUrl $version $customFlags --force --reset-values $namespace $customVals"
+	helmCmd="helm upgrade $release $chart --install $repoUrl $version $customFlags --force --reset-values $namespace $customVals $CMD_PS"
 	msg "$helmCmd"
 	eval "$helmCmd"
 fi
