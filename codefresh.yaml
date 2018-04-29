@@ -11,3 +11,7 @@ steps:
     candidate: ${{build}}
     registry: dockerhub
     tag: ${{HELM_VERSION}}
+    when:
+      branch:
+        only:
+          - master
