@@ -52,6 +52,12 @@ fixGcsContext() {
 	export GOOGLE_APPLICATION_CREDENTIALS="/tmp/google-creds.json"
 }
 
+fixCfContext() {
+  msg "Adding Codefresh token for managed repository"
+	export HELM_REPO_ACCESS_TOKEN=$CF_API_KEY
+	export HELM_REPO_AUTH_HEADER="x-access-token"
+}
+
 # get chart name (required)
 if [ -z "$CHART_NAME" ]; then
   err "Please, specify Helm Chart with CHART_NAME environment variable"
@@ -77,10 +83,11 @@ fi
 
 customVals=$(processCustomVals)
 
-# Workround for GCS. Should be fixed with new pluggable context
 if [ ! -z "${GOOGLE_APPLICATION_CREDENTIALS_JSON}" ] ; then
 	fixGcsContext
 fi
+fixCfContext
+
 processRepoContexts
 
 
@@ -115,6 +122,10 @@ then
 
 #switch between different types of repositories
 	case $CHART_REPO_URL in
+		cm*)
+			msg "Pushing the chart to Chart Museum bucket..."
+	    		helm push $PACKAGE $repoName && msg "Successfully pushed" || msg "Push failed"
+			;;
 		s3*)
 			msg "Pushing the chart to s3 bucket..."
 	    		helm s3 push $PACKAGE $repoName && msg "Successfully pushed" || msg "Push failed"
