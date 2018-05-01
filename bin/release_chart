@@ -17,8 +17,8 @@ processRepoContexts() {
 			msg "Adding basic auth to REPO URL"
 			varValue=$(echo $varValue | sed -rn 's/(https?:\/\/)(.*)/\1'"${HELMREPO_USERNAME}"':'"${HELMREPO_PASSWORD}"'@\2/p')
 		fi
-		msg "adding repo $repoName : $varValue"
-		helm repo add $repoName $varValue
+		msg "adding repo : $varValue"
+		helm repo add repo $varValue
 		msg "REPO_URL set to $varValue"
 		CHART_REPO_URL=$varValue
 	done
@@ -52,6 +52,12 @@ fixGcsContext() {
 	export GOOGLE_APPLICATION_CREDENTIALS="/tmp/google-creds.json"
 }
 
+fixCfContext() {
+  msg "Adding Codefresh token for managed repository"
+	export HELM_REPO_ACCESS_TOKEN=$CF_API_KEY
+	export HELM_REPO_AUTH_HEADER="x-access-token"
+}
+
 # get chart name (required)
 if [ -z "$CHART_NAME" ]; then
   err "Please, specify Helm Chart with CHART_NAME environment variable"
@@ -77,10 +83,11 @@ fi
 
 customVals=$(processCustomVals)
 
-# Workround for GCS. Should be fixed with new pluggable context
 if [ ! -z "${GOOGLE_APPLICATION_CREDENTIALS_JSON}" ] ; then
 	fixGcsContext
 fi
+fixCfContext
+
 processRepoContexts
 
 
@@ -101,7 +108,8 @@ fi
 
 # set chart repo flag
 if [ ! -z "${CHART_REPO_URL}" ]; then
-  repoUrl="--repo ${CHART_REPO_URL}"
+  #repoUrl="--repo ${CHART_REPO_URL}"
+	chart=repo/$chart
 else #if installing from local, "unpacked" chart, then restore dependencies first
   msg "Building dependencies"
   helm dependency build $chart
@@ -115,6 +123,10 @@ then
 
 #switch between different types of repositories
 	case $CHART_REPO_URL in
+		cm*)
+			msg "Pushing the chart to Chart Museum bucket..."
+	    		helm push $PACKAGE $repoName && msg "Successfully pushed" || msg "Push failed"
+			;;
 		s3*)
 			msg "Pushing the chart to s3 bucket..."
 	    		helm s3 push $PACKAGE $repoName && msg "Successfully pushed" || msg "Push failed"
@@ -126,7 +138,7 @@ then
 	esac
 else
 	msg "Installing chart"
-	helmCmd="helm upgrade $release $chart --install $repoUrl $version $customFlags --force --reset-values $namespace $customVals"
+	helmCmd="helm upgrade $release $chart --install $repoUrl $version $customFlags --force --reset-values $namespace $customVals $CMD_PS"
 	msg "$helmCmd"
 	eval "$helmCmd"
 fi
