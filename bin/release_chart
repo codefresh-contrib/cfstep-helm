@@ -17,8 +17,8 @@ processRepoContexts() {
 			msg "Adding basic auth to REPO URL"
 			varValue=$(echo $varValue | sed -rn 's/(https?:\/\/)(.*)/\1'"${HELMREPO_USERNAME}"':'"${HELMREPO_PASSWORD}"'@\2/p')
 		fi
-		msg "adding repo $repoName : $varValue"
-		helm repo add $repoName $varValue
+		msg "adding repo : $varValue"
+		helm repo add repo $varValue
 		msg "REPO_URL set to $varValue"
 		CHART_REPO_URL=$varValue
 	done
@@ -108,7 +108,8 @@ fi
 
 # set chart repo flag
 if [ ! -z "${CHART_REPO_URL}" ]; then
-  repoUrl="--repo ${CHART_REPO_URL}"
+  #repoUrl="--repo ${CHART_REPO_URL}"
+	chart=repo/$chart
 else #if installing from local, "unpacked" chart, then restore dependencies first
   msg "Building dependencies"
   helm dependency build $chart
