@@ -73,6 +73,10 @@ else
 fi
 
 if [ -z "$ACTION" ]; then
+	ACTION='install'
+fi
+
+if [ "$ACTION" == 'install' ]; then
 	# get release name (required for install)
 	if [ -z "$RELEASE_NAME" ]; then
 		err "Please, specify Helm Release name with RELEASE_NAME environment variable"
