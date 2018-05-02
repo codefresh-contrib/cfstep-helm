@@ -66,19 +66,21 @@ fi
 chart="${CHART_NAME}"
 
 # get release name (required)
-#TODO: optional
-if [ -z "$RELEASE_NAME" ]; then
-  err "Please, specify Helm Release name with RELEASE_NAME environment variable"
-  exit 1
-fi
-release="${RELEASE_NAME}"
 
-#TODO: optional
-if [ -z "$KUBE_CONTEXT" ]; then
-  err "Please, set Kubernetes context. Use name from Codefresh Integrations page."
-else
-  msg "Using ${KUBE_CONTEXT} context"
-  kubectl config use-context ${KUBE_CONTEXT}
+if [ -z "$ACTION"]; then
+	if [ -z "$RELEASE_NAME" ]; then
+		err "Please, specify Helm Release name with RELEASE_NAME environment variable"
+		exit 1
+	fi
+	release="${RELEASE_NAME}"
+
+
+	if [ -z "$KUBE_CONTEXT" ]; then
+		err "Please, set Kubernetes context. Use name from Codefresh Integrations page."
+	else
+		msg "Using ${KUBE_CONTEXT} context"
+		kubectl config use-context ${KUBE_CONTEXT}
+	fi
 fi
 
 customVals=$(processCustomVals)
