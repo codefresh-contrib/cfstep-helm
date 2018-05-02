@@ -6,6 +6,7 @@ err() { echo -e "ERR---> $1" ; exit 1; }
 
 # process repo contexts
 processRepoContexts() {
+	tempRepoName="repo"
 	local vars=$(env | awk -F '=' '{print $1}' | grep -iE "^CF_CTX_[^_].+_URL")
 
 	for var in $vars
@@ -17,10 +18,12 @@ processRepoContexts() {
 			msg "Adding basic auth to REPO URL"
 			varValue=$(echo $varValue | sed -rn 's/(https?:\/\/)(.*)/\1'"${HELMREPO_USERNAME}"':'"${HELMREPO_PASSWORD}"'@\2/p')
 		fi
-		msg "adding repo : $varValue"
-		helm repo add repo $varValue
-		msg "REPO_URL set to $varValue"
-		CHART_REPO_URL=$varValue
+		
+		export CHART_REPO_URL=$varValue/ #workaround a bug in Helm where url that doesn't end with / breaks --repo flags
+		msg "CHART_REPO_URL set to $CHART_REPO_URL"
+		
+		msg "adding repo : $CHART_REPO_URL"
+		helm repo add $tempRepoName $CHART_REPO_URL
 	done
 }
 
@@ -58,23 +61,25 @@ fixCfContext() {
 	export HELM_REPO_AUTH_HEADER="x-access-token"
 }
 
-# get chart name (required)
-if [ -z "$CHART_NAME" ]; then
-  err "Please, specify Helm Chart with CHART_NAME environment variable"
-  exit 1
+# get chart reference (required)
+if [ -z "$CHART_REF" ]; then
+	if [ -z "$CHART_NAME" ]; then
+		err "Please, specify Helm Chart with CHART_REF environment variable this should be a reference to the chart as Helm CLI expects"
+	else
+		chart="${CHART_NAME}"
+	fi
+else
+	chart="${CHART_REF}"
 fi
-chart="${CHART_NAME}"
 
-# get release name (required)
-
-if [ -z "$ACTION"]; then
+if [ -z "$ACTION" ]; then
+	# get release name (required for install)
 	if [ -z "$RELEASE_NAME" ]; then
 		err "Please, specify Helm Release name with RELEASE_NAME environment variable"
-		exit 1
 	fi
 	release="${RELEASE_NAME}"
 
-
+	# set kubernetes context (required for install)
 	if [ -z "$KUBE_CONTEXT" ]; then
 		err "Please, set Kubernetes context. Use name from Codefresh Integrations page."
 	else
@@ -97,7 +102,7 @@ processRepoContexts
 # TODO: leave it to helm to choose deafult ns
 # TODO: take from context
 if [ ! -z "${NAMESPACE}" ]; then
-namespace="--namespace=${NAMESPACE}"
+	namespace="--namespace=${NAMESPACE}"
 fi
 
 # TILLER_NAMESPACE is set as env var to helm.
@@ -108,34 +113,29 @@ if [ ! -z "${CHART_VERSION}" ]; then
   version="--version ${CHART_VERSION}"
 fi
 
-# set chart repo flag
 if [ ! -z "${CHART_REPO_URL}" ]; then
-  #repoUrl="--repo ${CHART_REPO_URL}"
-	chart=repo/$chart
+  	repoUrl="--repo ${CHART_REPO_URL}"
 else #if installing from local, "unpacked" chart, then restore dependencies first
   msg "Building dependencies"
   helm dependency build $chart
 fi
 
-#if ACTION is set to push, perform chart pushing instead of deploying
-if [ $ACTION == 'push' ]
-then
-	msg "Packaging the chart..."
+if [ "$ACTION" == 'push' ]; then
+	msg "Packaging the chart"
 	PACKAGE=$(helm package $chart $version --destination /dev/shm/ | cut -d " " -f 8)
 
-#switch between different types of repositories
 	case $CHART_REPO_URL in
 		cm*)
-			msg "Pushing the chart to Chart Museum bucket..."
-	    		helm push $PACKAGE $repoName && msg "Successfully pushed" || msg "Push failed"
+			msg "Pushing to Chart Museum"
+	    		helm push $PACKAGE $tempRepoName && msg "Successfully pushed" || msg "Push failed"
 			;;
 		s3*)
-			msg "Pushing the chart to s3 bucket..."
-	    		helm s3 push $PACKAGE $repoName && msg "Successfully pushed" || msg "Push failed"
+			msg "Pushing to S3 bucket"
+	    		helm s3 push $PACKAGE $tempRepoName && msg "Successfully pushed" || msg "Push failed"
 			;;
 		gs*)
-			msg "Pushing the chart to GCS bucket..."
-			helm gcs push $PACKAGE $repoName && msg "Successfully pushed" || msg "Push failed"
+			msg "Pushing to GCS bucket"
+			helm gcs push $PACKAGE $tempRepoName && msg "Successfully pushed" || msg "Push failed"
 			;;
 	esac
 else
