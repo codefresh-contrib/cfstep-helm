@@ -31,17 +31,17 @@ processRepoContexts() {
 processCustomVals() {
 	local resultedArgs=""
 
-	local vars=$(env | awk -F '=' '{print $1}' | grep -i "^customFile_")
+	local vars=$(env | awk -F '=' '{print $1}' | grep -i -e "^customFile_" -e "^valuesFile_")
 	for var in $vars
 	do
 		local varValue=$(eval "echo \$$var")
 		resultedArgs="$resultedArgs --values $varValue"
 	done
 
-	local vars=$(env | awk -F '=' '{print $1}' | grep -i "^custom_")
+	local vars=$(env | awk -F '=' '{print $1}' | grep -i -e "^custom_" -e "^value_")
 	for var in $vars
 	do
-		local varName=$(echo $var | sed 's/^custom_//gI' | sed 's/_/./g' | sed 's/\.\./_/g')
+		local varName=$(echo $var | sed 's/^custom_\|^value_//gI' | sed 's/_/./g' | sed 's/\.\./_/g')
 		local varValue=$(eval "echo \$$var")
 		resultedArgs="$resultedArgs --set $varName=$varValue"
 	done
