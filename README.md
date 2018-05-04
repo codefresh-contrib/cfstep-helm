@@ -1,2 +1,2 @@
-This Docker image is being used by the Codefresh [Helm](https://helm.sh) plugin.
-For more information, see the documentation on the plugin repository.
+This Docker image is being used by the Codefresh Helm step.
+See documentation here: [https://codefresh.io/docs/docs/new-helm/using-helm-in-codefresh-pipeline/](https://codefresh.io/docs/docs/new-helm/using-helm-in-codefresh-pipeline/)
