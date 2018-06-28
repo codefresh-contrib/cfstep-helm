@@ -1,0 +1,4 @@
+.idea/
+.robot/
+.venv/
+**/*.pyc
