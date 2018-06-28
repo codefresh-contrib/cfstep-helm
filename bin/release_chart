@@ -65,19 +65,21 @@ fixCfContext() {
     export HELM_REPO_AUTH_HEADER="x-access-token"
 }
 
-# get chart reference (required)
-if [ -z "$CHART_REF" ]; then
-	if [ -z "$CHART_NAME" ]; then
-		err "Please, specify Helm Chart with CHART_REF environment variable this should be a reference to the chart as Helm CLI expects"
-	else
-		chart="${CHART_NAME}"
-	fi
-else
-	chart="${CHART_REF}"
-fi
-
 if [ -z "$ACTION" ]; then
 	ACTION='install'
+fi
+
+if [ "$ACTION" != 'auth' ]; then
+    # get chart reference (required)
+    if [ -z "$CHART_REF" ]; then
+        if [ -z "$CHART_NAME" ]; then
+            err "Please, specify Helm Chart with CHART_REF environment variable this should be a reference to the chart as Helm CLI expects"
+        else
+            chart="${CHART_NAME}"
+        fi
+    else
+        chart="${CHART_REF}"
+    fi
 fi
 
 if [ "$ACTION" == 'install' ]; then
