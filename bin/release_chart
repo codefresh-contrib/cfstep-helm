@@ -129,7 +129,7 @@ fi
 
 if [ "$ACTION" == 'auth' ]; then
     msg "Authentication context has been setup, exiting."
-    exit 0
+    [[ $_ != $0 ]] && return 0 || exit 0
 fi
 
 if [ ! -z "${CHART_REPO_URL}" ]; then
