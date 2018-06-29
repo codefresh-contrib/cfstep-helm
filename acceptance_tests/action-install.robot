@@ -85,3 +85,15 @@ Install detects CUSTOM_ and VALUE_ environment vars and converts correctly
     Output contains   --set myimage.customField=Other
     Output contains   --set env.open.STORAGE_AMAZON_BUCKET=my-s3-bucket
     Output contains   --set env.open.STORAGE_AMAZON_REGION=us-west-2
+
+CMD_PS is passed to the end of install command
+    &{env}=   Create dictionary
+    Set to dictionary   ${env}  CHART_REF   mychartref
+    Set to dictionary   ${env}  RELEASE_NAME   my-release
+    Set to dictionary   ${env}  KUBE_CONTEXT   my-context
+    Set to dictionary   ${env}  DRY_RUN   true
+    Set to dictionary   ${env}  CMD_PS   --my-fake-flag
+    Run with env   ${env}
+    Should have succeeded
+    Output contains   helm upgrade
+    Output contains   --my-fake-flag
