@@ -351,3 +351,14 @@ steps:
       branch:
         only:
           - master
+
+  # Latest tag (2.9.1)
+  push_latest:
+    type: push
+    candidate: ${{build_2_9_1}}
+    registry: dockerhub
+    tag: latest
+    when:
+      branch:
+        only:
+          - master
