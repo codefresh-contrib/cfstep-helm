@@ -7,6 +7,7 @@ Library           lib/CFStepHelm.py
 # 255 is a custom code we have for the "Source with env and check for var" command
 Sourcing will provide exported environment variables
     &{env}=   Create dictionary
+    Set to dictionary   ${env}  DRY_RUN   true
     Set to dictionary   ${env}  ACTION   auth
     Set to dictionary   ${env}  GOOGLE_APPLICATION_CREDENTIALS_JSON   {"x": "y"}
 
@@ -21,6 +22,7 @@ Sourcing will provide exported environment variables
 
 If not sourced it will exit 0
     &{env}=   Create dictionary
+    Set to dictionary   ${env}  DRY_RUN   true
     Set to dictionary   ${env}  ACTION   auth
 
     Run with env   ${env}

@@ -35,14 +35,14 @@ processRepoContexts() {
 processCustomVals() {
 	local resultedArgs=""
 
-	local vars=$(env | awk -F '=' '{print $1}' | grep -i -e "^customFile_" -e "^valuesFile_")
+	local vars="$(env | awk -F '=' '{print $1}' | grep -i -e "^customFile_" -e "^valuesFile_")"
 	for var in $vars
 	do
 		local varValue=$(eval "echo \$$var")
 		resultedArgs="$resultedArgs --values $varValue"
 	done
 
-	local vars=$(env | awk -F '=' '{print $1}' | grep -i -e "^custom_" -e "^value_")
+	local vars="$(env | awk -F '=' '{print $1}' | grep -i -e "^custom_" -e "^value_")"
 	for var in $vars
 	do
 		local varName=$(echo $var | sed 's/^custom_\|^value_//gI' | sed 's/_/./g' | sed 's/\.\./_/g')
@@ -82,7 +82,7 @@ if [ "$ACTION" != 'auth' ]; then
     fi
 fi
 
-if [ "$ACTION" == 'install' ]; then
+if [ "$ACTION" = 'install' ]; then
 	# get release name (required for install)
 	if [ -z "$RELEASE_NAME" ]; then
 		err "Please, specify Helm Release name with RELEASE_NAME environment variable"
@@ -127,9 +127,9 @@ if [ ! -z "${CHART_VERSION}" ]; then
     version="--version ${CHART_VERSION}"
 fi
 
-if [ "$ACTION" == 'auth' ]; then
+if [ "$ACTION" = 'auth' ]; then
     msg "Authentication context has been setup, exiting."
-    [[ $_ != $0 ]] && return 0 || exit 0
+    return 0 2> /dev/null || exit 0
 fi
 
 if [ ! -z "${CHART_REPO_URL}" ]; then
@@ -143,7 +143,7 @@ else #if installing from local, "unpacked" chart, then restore dependencies firs
     fi
 fi
 
-if [ "$ACTION" == 'push' ]; then
+if [ "$ACTION" = 'push' ]; then
 	msg "Packaging the chart"
 
 	if [ -z "$DRY_RUN" ]; then
