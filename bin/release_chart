@@ -18,12 +18,16 @@ processRepoContexts() {
 			msg "Adding basic auth to REPO URL"
 			varValue=$(echo $varValue | sed -rn 's/(https?:\/\/)(.*)/\1'"${HELMREPO_USERNAME}"':'"${HELMREPO_PASSWORD}"'@\2/p')
 		fi
-		
+
 		export CHART_REPO_URL=$varValue/ #workaround a bug in Helm where url that doesn't end with / breaks --repo flags
 		msg "CHART_REPO_URL set to $CHART_REPO_URL"
-		
+
 		msg "adding repo : $CHART_REPO_URL"
-		helm repo add $tempRepoName $CHART_REPO_URL
+		if [ -z "$DRY_RUN" ]; then
+		    helm repo add $tempRepoName $CHART_REPO_URL
+		else
+		    echo helm repo add $tempRepoName $CHART_REPO_URL
+		fi
 	done
 }
 
@@ -31,14 +35,14 @@ processRepoContexts() {
 processCustomVals() {
 	local resultedArgs=""
 
-	local vars=$(env | awk -F '=' '{print $1}' | grep -i -e "^customFile_" -e "^valuesFile_")
+	local vars="$(env | awk -F '=' '{print $1}' | grep -i -e "^customFile_" -e "^valuesFile_")"
 	for var in $vars
 	do
 		local varValue=$(eval "echo \$$var")
 		resultedArgs="$resultedArgs --values $varValue"
 	done
 
-	local vars=$(env | awk -F '=' '{print $1}' | grep -i -e "^custom_" -e "^value_")
+	local vars="$(env | awk -F '=' '{print $1}' | grep -i -e "^custom_" -e "^value_")"
 	for var in $vars
 	do
 		local varName=$(echo $var | sed 's/^custom_\|^value_//gI' | sed 's/_/./g' | sed 's/\.\./_/g')
@@ -56,27 +60,29 @@ fixGcsContext() {
 }
 
 fixCfContext() {
-  msg "Adding Codefresh token for managed repository"
-	export HELM_REPO_ACCESS_TOKEN=$CF_API_KEY
-	export HELM_REPO_AUTH_HEADER="x-access-token"
+    msg "Adding Codefresh token for managed repository"
+    export HELM_REPO_ACCESS_TOKEN=$CF_API_KEY
+    export HELM_REPO_AUTH_HEADER="x-access-token"
 }
-
-# get chart reference (required)
-if [ -z "$CHART_REF" ]; then
-	if [ -z "$CHART_NAME" ]; then
-		err "Please, specify Helm Chart with CHART_REF environment variable this should be a reference to the chart as Helm CLI expects"
-	else
-		chart="${CHART_NAME}"
-	fi
-else
-	chart="${CHART_REF}"
-fi
 
 if [ -z "$ACTION" ]; then
 	ACTION='install'
 fi
 
-if [ "$ACTION" == 'install' ]; then
+if [ "$ACTION" != 'auth' ]; then
+    # get chart reference (required)
+    if [ -z "$CHART_REF" ]; then
+        if [ -z "$CHART_NAME" ]; then
+            err "Please, specify Helm Chart with CHART_REF environment variable this should be a reference to the chart as Helm CLI expects"
+        else
+            chart="${CHART_NAME}"
+        fi
+    else
+        chart="${CHART_REF}"
+    fi
+fi
+
+if [ "$ACTION" = 'install' ]; then
 	# get release name (required for install)
 	if [ -z "$RELEASE_NAME" ]; then
 		err "Please, specify Helm Release name with RELEASE_NAME environment variable"
@@ -88,7 +94,11 @@ if [ "$ACTION" == 'install' ]; then
 		err "Please, set Kubernetes context. Use name from Codefresh Integrations page."
 	else
 		msg "Using ${KUBE_CONTEXT} context"
-		kubectl config use-context ${KUBE_CONTEXT}
+		if [ -z "$DRY_RUN" ]; then
+		    kubectl config use-context ${KUBE_CONTEXT}
+		else
+		    echo kubectl config use-context ${KUBE_CONTEXT}
+		fi
 	fi
 fi
 
@@ -114,42 +124,65 @@ fi
 
 # set chart version flag
 if [ ! -z "${CHART_VERSION}" ]; then
-  version="--version ${CHART_VERSION}"
+    version="--version ${CHART_VERSION}"
 fi
 
-if [ "$ACTION" == 'auth' ]; then
-  msg "Authentication context has been setup, exiting."
-	exit 0
+if [ "$ACTION" = 'auth' ]; then
+    msg "Authentication context has been setup, exiting."
+    return 0 2> /dev/null || exit 0
 fi
 
 if [ ! -z "${CHART_REPO_URL}" ]; then
-  	repoUrl="--repo ${CHART_REPO_URL}"
+    repoUrl="--repo ${CHART_REPO_URL}"
 else #if installing from local, "unpacked" chart, then restore dependencies first
-  msg "Building dependencies"
-  helm dependency build $chart
+    msg "Building dependencies"
+    if [ -z "$DRY_RUN" ]; then
+        helm dependency build $chart
+    else
+        echo helm dependency build $chart
+    fi
 fi
 
-if [ "$ACTION" == 'push' ]; then
+if [ "$ACTION" = 'push' ]; then
 	msg "Packaging the chart"
-	PACKAGE=$(helm package $chart $version --destination /dev/shm/ | cut -d " " -f 8)
+
+	if [ -z "$DRY_RUN" ]; then
+	    PACKAGE=$(helm package $chart $version --destination /dev/shm/ | cut -d " " -f 8)
+	else
+	    PACKAGE="dryrun-0.0.1.tgz"
+	fi
 
 	case $CHART_REPO_URL in
 		cm*)
 			msg "Pushing to Chart Museum"
-	    		helm push $PACKAGE $tempRepoName && msg "Successfully pushed" || msg "Push failed"
+			if [ -z "$DRY_RUN" ]; then
+				helm push $PACKAGE $tempRepoName && msg "Successfully pushed" || msg "Push failed"
+			else
+				echo helm push $PACKAGE $tempRepoName
+			fi
 			;;
 		s3*)
 			msg "Pushing to S3 bucket"
-	    		helm s3 push $PACKAGE $tempRepoName && msg "Successfully pushed" || msg "Push failed"
+			if [ -z "$DRY_RUN" ]; then
+				helm s3 push $PACKAGE $tempRepoName && msg "Successfully pushed" || msg "Push failed"
+			else
+				echo helm s3 push $PACKAGE $tempRepoName
+			fi
 			;;
 		gs*)
 			msg "Pushing to GCS bucket"
-			helm gcs push $PACKAGE $tempRepoName && msg "Successfully pushed" || msg "Push failed"
+			if [ -z "$DRY_RUN" ]; then
+				helm gcs push $PACKAGE $tempRepoName && msg "Successfully pushed" || msg "Push failed"
+			else
+				echo helm gcs push $PACKAGE $tempRepoName
+			fi
 			;;
 	esac
 else
 	msg "Installing chart"
 	helmCmd="helm upgrade $release $chart --install $repoUrl $version $customFlags --force --reset-values $namespace $customVals $CMD_PS"
 	msg "$helmCmd"
-	eval "$helmCmd"
+	if [ -z "$DRY_RUN" ]; then
+	    eval "$helmCmd"
+	fi
 fi
