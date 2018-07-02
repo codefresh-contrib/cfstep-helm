@@ -28,14 +28,14 @@ class CommandRunner(object):
 
     def run_command_with_env(self, command, detach=False, env={}):
         execution_env = os.environ.copy()
-        for key, val in env.iteritems():
+        for key, val in env.items():
             execution_env[str(key)] = str(val)
         process = subprocess.Popen(command,
                                    env=execution_env,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT)
         if not detach:
-            stdout = process.communicate()[0].strip()
+            stdout = str(process.communicate()[0].strip())
             print(stdout)
             self.rc = process.returncode
             # Remove debug lines that start with "+ "
