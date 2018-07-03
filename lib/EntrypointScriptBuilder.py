@@ -75,7 +75,7 @@ class EntrypointScriptBuilder(object):
         if self.action == 'install':
             if self.kube_context is None:
                 raise Exception('Must set KUBE_CONTEXT in environment (Name of Kubernetes cluster as named in Codefresh)')
-            kubectl_cmd = 'kubectl config use-context %s' % self.kube_context
+            kubectl_cmd = 'kubectl config use-context "%s"' % self.kube_context
             if self.dry_run:
                 kubectl_cmd = 'echo ' + kubectl_cmd
             lines.append(kubectl_cmd)
