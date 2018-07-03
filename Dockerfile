@@ -1,4 +1,5 @@
 ARG HELM_VERSION
+
 FROM golang:latest as setup
 ARG HELM_VERSION
 RUN curl -L "https://storage.googleapis.com/kubernetes-helm/helm-v${HELM_VERSION}-linux-amd64.tar.gz" -o helm.tar.gz \
@@ -19,6 +20,7 @@ RUN apt-get update \
     && make acceptance
 
 FROM codefresh/kube-helm:${HELM_VERSION}
+ARG HELM_VERSION
 COPY --from=setup /root/.helm/ /root/.helm/
 COPY bin/* /opt/bin/
 RUN chmod +x /opt/bin/*
