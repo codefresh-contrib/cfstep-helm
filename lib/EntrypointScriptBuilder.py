@@ -4,8 +4,7 @@ class EntrypointScriptBuilder(object):
     def __init__(self, env):
         self.action = env.get('ACTION', 'install').lower()
         self.kube_context = env.get('KUBE_CONTEXT')
-        self.chart_ref = env.get('CHART_REF')
-        self.chart_name = env.get('CHART_NAME')
+        self.chart_ref = env.get('CHART_REF', env.get('CHART_NAME'))
         self.chart_repo_url = env.get('CHART_REPO_URL')
         self.chart_version = env.get('CHART_VERSION')
         self.release_name = env.get('RELEASE_NAME')
@@ -88,13 +87,10 @@ class EntrypointScriptBuilder(object):
         if self.action == 'auth':
             return lines
 
-        chart_ref = self.chart_ref
-        if chart_ref is None:
-            if self.chart_name is None:
-                raise Exception('Must set CHART_REF in the environment (this should be a reference to the chart as Helm CLI expects)')
-            else:
-                chart_ref = self.chart_name
+        if self.chart_ref is None:
+            raise Exception('Must set CHART_REF in the environment (this should be a reference to the chart as Helm CLI expects)')
 
+        # Add Helm repos locally
         for repo_name, repo_url in sorted(self.helm_repos.items()):
             helm_repo_add_cmd = 'helm repo add %s %s' % (repo_name, repo_url)
             if self.dry_run:
@@ -102,69 +98,82 @@ class EntrypointScriptBuilder(object):
             lines.append(helm_repo_add_cmd)
 
         if self.action == 'install':
-            if self.release_name is None:
-                raise Exception('Must set RELEASE_NAME in the environment (desired Helm release name)')
-
-            # If CHART_REPO_URL is specified, we do not attempt to gather dependencies
-            if self.chart_repo_url is None:
-                helm_dep_build_cmd = 'helm dependency build %s' % chart_ref
-                if self.dry_run:
-                    helm_dep_build_cmd = 'echo ' + helm_dep_build_cmd
-                lines.append(helm_dep_build_cmd)
-
-            helm_upgrade_cmd = 'helm upgrade %s %s --install --force --reset-values ' % (self.release_name, chart_ref)
-            if self.chart_repo_url is not None:
-                helm_upgrade_cmd += '--repo %s ' % self.chart_repo_url
-            if self.chart_version is not None:
-                helm_upgrade_cmd += '--version %s ' % self.chart_version
-            if self.namespace is not None:
-                helm_upgrade_cmd += '--namespace %s ' % self.namespace
-            for custom_valuesfile in self.custom_valuesfiles:
-                helm_upgrade_cmd += '--values %s ' % custom_valuesfile
-            for cli_set_key, val in sorted(self.custom_values.items()):
-                helm_upgrade_cmd += '--set %s=%s' % (cli_set_key, val)
-            if self.cmd_ps is not None:
-                helm_upgrade_cmd += self.cmd_ps
-            if self.dry_run:
-                helm_upgrade_cmd = 'echo ' + helm_upgrade_cmd
-            lines.append(helm_upgrade_cmd)
-
+            lines += self._build_helm_install_commands()
         elif self.action == 'push':
-            if self.chart_repo_url is None:
-                raise Exception('Must set CHART_REPO_URL in the environment, otherwise attach a Helm Repo context (prefixed with CF_CTX_)')
+            lines += self._build_helm_push_commands()
 
-            helm_repo_add_cmd = 'helm repo add remote %s' % self.chart_repo_url
-            if self.dry_run:
-                helm_repo_add_cmd = 'echo ' + helm_repo_add_cmd
-            lines.append(helm_repo_add_cmd)
+        return lines
 
-            helm_dep_build_cmd = 'helm dependency build %s' % chart_ref
+    def _build_helm_install_commands(self):
+        lines = []
+
+        if self.release_name is None:
+            raise Exception('Must set RELEASE_NAME in the environment (desired Helm release name)')
+
+        # Only build dependencies if CHART_REPO_URL is not specified
+        if self.chart_repo_url is None:
+            helm_dep_build_cmd = 'helm dependency build %s' % self.chart_ref
             if self.dry_run:
                 helm_dep_build_cmd = 'echo ' + helm_dep_build_cmd
             lines.append(helm_dep_build_cmd)
 
-            if self.dry_run:
-                package_var = 'dryrun-0.0.1.tgz'
-            else:
-                package_var = '$(helm package %s ' % chart_ref
-                if self.chart_version is not None:
-                    package_var += self.chart_version + ' '
-                package_var += '--destination /tmp | cut -d " " -f 8)'
-            lines.append('PACKAGE="%s"' % package_var)
+        helm_upgrade_cmd = 'helm upgrade %s %s --install --force --reset-values ' % (self.release_name, self.chart_ref)
+        if self.chart_repo_url is not None:
+            helm_upgrade_cmd += '--repo %s ' % self.chart_repo_url
+        if self.chart_version is not None:
+            helm_upgrade_cmd += '--version %s ' % self.chart_version
+        if self.namespace is not None:
+            helm_upgrade_cmd += '--namespace %s ' % self.namespace
+        for custom_valuesfile in self.custom_valuesfiles:
+            helm_upgrade_cmd += '--values %s ' % custom_valuesfile
+        for cli_set_key, val in sorted(self.custom_values.items()):
+            helm_upgrade_cmd += '--set %s=%s' % (cli_set_key, val)
+        if self.cmd_ps is not None:
+            helm_upgrade_cmd += self.cmd_ps
+        if self.dry_run:
+            helm_upgrade_cmd = 'echo ' + helm_upgrade_cmd
+        lines.append(helm_upgrade_cmd)
 
-            if self.chart_repo_url.startswith('cm://'):
-                helm_push_command = 'helm push $PACKAGE remote'
-            elif self.chart_repo_url.startswith('s3://'):
-                helm_push_command = 'helm s3 push $PACKAGE remote'
-            elif self.chart_repo_url.startswith('gs://'):
-                helm_push_command = 'helm gcs push $PACKAGE remote'
-            else:
-                raise Exception('Unsupported protocol in CHART_REPO_URL')
+        return lines
 
-            if self.dry_run:
-                helm_push_command = 'echo ' + helm_push_command
+    def _build_helm_push_commands(self):
+        lines = []
 
-            lines.append(helm_push_command)
+        if self.chart_repo_url is None:
+            raise Exception('Must set CHART_REPO_URL in the environment, otherwise attach a Helm Repo context (prefixed with CF_CTX_)')
+
+        helm_repo_add_cmd = 'helm repo add remote %s' % self.chart_repo_url
+        if self.dry_run:
+            helm_repo_add_cmd = 'echo ' + helm_repo_add_cmd
+        lines.append(helm_repo_add_cmd)
+
+        helm_dep_build_cmd = 'helm dependency build %s' % self.chart_ref
+        if self.dry_run:
+            helm_dep_build_cmd = 'echo ' + helm_dep_build_cmd
+        lines.append(helm_dep_build_cmd)
+
+        if self.dry_run:
+            package_var = 'dryrun-0.0.1.tgz'
+        else:
+            package_var = '$(helm package %s ' % self.chart_ref
+            if self.chart_version is not None:
+                package_var += self.chart_version + ' '
+            package_var += '--destination /tmp | cut -d " " -f 8)'
+        lines.append('PACKAGE="%s"' % package_var)
+
+        if self.chart_repo_url.startswith('cm://'):
+            helm_push_command = 'helm push $PACKAGE remote'
+        elif self.chart_repo_url.startswith('s3://'):
+            helm_push_command = 'helm s3 push $PACKAGE remote'
+        elif self.chart_repo_url.startswith('gs://'):
+            helm_push_command = 'helm gcs push $PACKAGE remote'
+        else:
+            raise Exception('Unsupported protocol in CHART_REPO_URL')
+
+        if self.dry_run:
+            helm_push_command = 'echo ' + helm_push_command
+
+        lines.append(helm_push_command)
 
         return lines
 

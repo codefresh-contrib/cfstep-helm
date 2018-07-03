@@ -7,5 +7,5 @@ class CFStepHelm(common.CommandRunner):
 
     def source_with_env_and_check_for_var(self, env={}, var=''):
         self.run_command_with_env([
-            '/bin/sh', '-xc', 'unset $%s && . release_chart && ( env | grep -q %s ) && exit 255' % (var, var)
+            '/bin/sh', '-xc', 'unset %s && . release_chart && ( env | grep -q %s ) && exit 255' % (var, var)
         ], False, env)

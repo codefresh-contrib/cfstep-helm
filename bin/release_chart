@@ -13,20 +13,24 @@
 # Finally the "/tmp/run" script is executed (or sourced if this script itself is being sourced)
 #
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd $DIR
-PYTHONPATH="$(pwd)/../lib" ./build_entrypoint_script > /tmp/run
+mask_cmd() {
+    $@ | sed 's/:[^\/][^@]*@/:\*\*\*\*\*@/g'
+}
+
+CFSTEP_HELM_ROOTDIR="${CFSTEP_HELM_ROOTDIR:-/opt}"
+
+PYTHONPATH="${CFSTEP_HELM_ROOTDIR}/lib" "${CFSTEP_HELM_ROOTDIR}/bin/build_entrypoint_script" > /tmp/run
 
 echo ""
 echo "Running the following script:"
 echo "----------------------------"
-cat /tmp/run
+mask_cmd cat /tmp/run
 echo "----------------------------"
 echo ""
 
-if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
-    source /tmp/run
-else
+if [ "$(basename $0)" = "release_chart" ]; then
     chmod +x /tmp/run
-    /tmp/run
+    mask_cmd /tmp/run
+else
+    . /tmp/run
 fi

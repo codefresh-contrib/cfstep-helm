@@ -15,7 +15,7 @@ CHART_REPO_URL is set automatically given CF_CTX_CF_HELM_DEFAULT_URL and normali
     Should have succeeded
     Output contains   cm://h.cfcr.io/myaccount/default/
 
-Helm username and password added to an https CHART_REPO_URL given HELMREPO_USERNAME
+Helm username and password added to an https CHART_REPO_URL given HELMREPO_USERNAME and HELMREPO_PASSWORD is encrypted
     &{env}=   Create dictionary
     Set to dictionary   ${env}  CHART_REF   mychartref
     Set to dictionary   ${env}  RELEASE_NAME   my-release
@@ -26,4 +26,4 @@ Helm username and password added to an https CHART_REPO_URL given HELMREPO_USERN
     Set to dictionary   ${env}  HELMREPO_PASSWORD   pass
     Run with env   ${env}
     Should have succeeded
-    Output contains   https://user:pass@myhelmrepo.com
+    Output contains   https://user:*****@myhelmrepo.com
