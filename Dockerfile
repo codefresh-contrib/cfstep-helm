@@ -1,4 +1,5 @@
 ARG HELM_VERSION
+
 FROM golang:latest as setup
 ARG HELM_VERSION
 RUN curl -L "https://storage.googleapis.com/kubernetes-helm/helm-v${HELM_VERSION}-linux-amd64.tar.gz" -o helm.tar.gz \
@@ -12,15 +13,23 @@ RUN curl -L "https://storage.googleapis.com/kubernetes-helm/helm-v${HELM_VERSION
 # Run acceptance tests
 COPY Makefile Makefile
 COPY bin/ bin/
+COPY lib/ lib/
 COPY acceptance_tests/ acceptance_tests/
-RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
-    && python get-pip.py \
-    && pip install virtualenv \
+RUN apt-get update \
+    && apt-get install -y python3-venv \
     && make acceptance
 
 FROM codefresh/kube-helm:${HELM_VERSION}
+ARG HELM_VERSION
 COPY --from=setup /root/.helm/ /root/.helm/
 COPY bin/* /opt/bin/
 RUN chmod +x /opt/bin/*
+COPY lib/* /opt/lib/
+
+# Install Python3
+RUN apk add --no-cache python3 \
+    && rm -rf /root/.cache
+
+ENV HELM_VERSION ${HELM_VERSION}
 
 ENTRYPOINT ["/opt/bin/release_chart"]

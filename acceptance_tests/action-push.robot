@@ -39,14 +39,3 @@ Able to push to GCS repo
     Run with env   ${env}
     Should have succeeded
     Output contains   helm gcs push
-
-CHART_REPO_URL is set automatically given CF_CTX_CF_HELM_DEFAULT_URL and normalized to contain a trailing slash
-    &{env}=   Create dictionary
-    Set to dictionary   ${env}  CHART_REF   mychartref
-    Set to dictionary   ${env}  RELEASE_NAME   my-release
-    Set to dictionary   ${env}  KUBE_CONTEXT   my-context
-    Set to dictionary   ${env}  DRY_RUN   true
-    Set to dictionary   ${env}  CF_CTX_CF_HELM_DEFAULT_URL   cm://h.cfcr.io/myaccount/default
-    Run with env   ${env}
-    Should have succeeded
-    Output contains   cm://h.cfcr.io/myaccount/default/

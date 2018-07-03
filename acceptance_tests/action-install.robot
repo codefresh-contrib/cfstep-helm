@@ -48,7 +48,7 @@ Install chart with NAMESPACE
     Run with env   ${env}
     Should have succeeded
     Output contains   helm upgrade
-    Output contains   --namespace=staging
+    Output contains   --namespace staging
 
 Install detects CUSTOMFILE_ and VALUESFILE_ environment vars and converts correctly
     &{env}=   Create dictionary
