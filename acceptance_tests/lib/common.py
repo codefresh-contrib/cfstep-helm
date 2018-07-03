@@ -36,10 +36,12 @@ class CommandRunner(object):
                                    stderr=subprocess.STDOUT)
         if not detach:
             stdout = str(process.communicate()[0].strip())
-            print(stdout)
             self.rc = process.returncode
             # Remove debug lines that start with "+ "
-            self.stdout = '\n'.join(filter(lambda x: not x.startswith('+ '), stdout.split('\n')))
+            lines = stdout.split('\\n')
+            for line in lines:
+                print(line)
+            self.stdout = '\n'.join(filter(lambda x: not x.startswith('+ '), lines))
 
 
     def should_have_failed(self):
