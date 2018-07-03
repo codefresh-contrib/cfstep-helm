@@ -1,5 +1,4 @@
-#!/usr/bin/env bash
-set -eo pipefail
+#!/bin/bash -e
 
 #
 # release_chart
@@ -15,7 +14,7 @@ set -eo pipefail
 #
 
 mask_cmd() {
-    $@ | sed 's/:[^\/][^@]*@/:\*\*\*\*\*@/g'
+    (set -o pipefail && $@ | sed 's/:[^\/][^@]*@/:\*\*\*\*\*@/g')
 }
 
 CFSTEP_HELM_ROOTDIR="${CFSTEP_HELM_ROOTDIR:-/opt}"
