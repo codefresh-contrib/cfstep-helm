@@ -127,7 +127,7 @@ class EntrypointScriptBuilder(object):
         for custom_valuesfile in self.custom_valuesfiles:
             helm_upgrade_cmd += '--values %s ' % custom_valuesfile
         for cli_set_key, val in sorted(self.custom_values.items()):
-            helm_upgrade_cmd += '--set %s=%s' % (cli_set_key, val)
+            helm_upgrade_cmd += '--set %s=%s ' % (cli_set_key, val)
         if self.cmd_ps is not None:
             helm_upgrade_cmd += self.cmd_ps
         if self.dry_run:
