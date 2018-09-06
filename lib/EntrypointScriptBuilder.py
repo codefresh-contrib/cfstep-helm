@@ -36,6 +36,19 @@ class EntrypointScriptBuilder(object):
             custom_values[cli_set_key] = val
         self.custom_values = custom_values
 
+        # Specific value overrides (--set-string) sourced from vars prefixed with or "VALUESTRING_"
+        string_values = {}
+        for key, val in sorted(env.items()):
+            key_upper = key.upper()
+            if key_upper.startswith('VALUESTRING_'):
+                cli_set_key = key[12:]
+            else:
+                continue
+            cli_set_key = cli_set_key.replace('_', '.')
+            cli_set_key = cli_set_key.replace('..', '_')
+            string_values[cli_set_key] = val
+        self.string_values = string_values
+
         # Extract Helm repos to add from attached Helm repo contexts prefixed with "CF_CTX_" and suffixed with "_URL"
         helm_repos = {}
         chart_repo_url = self.chart_repo_url
@@ -128,6 +141,8 @@ class EntrypointScriptBuilder(object):
             helm_upgrade_cmd += '--values %s ' % custom_valuesfile
         for cli_set_key, val in sorted(self.custom_values.items()):
             helm_upgrade_cmd += '--set %s=%s ' % (cli_set_key, val)
+        for cli_set_key, val in sorted(self.string_values.items()):
+            helm_upgrade_cmd += '--set-string %s=%s ' % (cli_set_key, val)
         if self.cmd_ps is not None:
             helm_upgrade_cmd += self.cmd_ps
         if self.dry_run:
