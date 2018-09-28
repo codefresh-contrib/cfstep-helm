@@ -21,6 +21,8 @@ CFSTEP_HELM_ROOTDIR="${CFSTEP_HELM_ROOTDIR:-/opt}"
 
 PYTHONPATH="${CFSTEP_HELM_ROOTDIR}/lib" "${CFSTEP_HELM_ROOTDIR}/bin/build_entrypoint_script" > /tmp/run
 
+echo "CHART is here"
+echo CHART
 echo ""
 echo "Running the following script:"
 echo "----------------------------"
