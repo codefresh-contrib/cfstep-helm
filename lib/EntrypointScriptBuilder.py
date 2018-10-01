@@ -172,7 +172,7 @@ class EntrypointScriptBuilder(object):
         else:
             package_var = '$(helm package %s ' % self.chart_ref
             if self.chart_version is not None:
-                package_var += self.chart_version + ' '
+                package_var += '--version ' + self.chart_version + ' '
             package_var += '--destination /tmp | cut -d " " -f 8)'
         lines.append('PACKAGE="%s"' % package_var)
 
