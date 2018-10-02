@@ -70,7 +70,8 @@ class EntrypointScriptBuilder(object):
                 if repo_url.startswith('http://') or repo_url.startswith('https://'):
                     if helm_repo_username is not None and helm_repo_password is not None:
                         repo_url = repo_url.replace('://', '://%s:%s@' % (helm_repo_username, helm_repo_password), 1)
-                helm_repos[repo_name] = repo_url
+                if not repo_url.startswith('az://'):
+                    helm_repos[repo_name] = repo_url
                 if self.chart_repo_url is None:
                     chart_repo_url = repo_url
 
