@@ -40,7 +40,8 @@ class EntrypointScriptBuilder(object):
                             raise
 
                 file = open('/opt/chart/' + item['name'], 'w')
-                file.write(item['data'])
+                data = item['data'] if 'data' in item.keys() else ''
+                file.write(data)
                 file.close()
 
         # Values files (-f/--values) sourced from vars prefixed with "CUSTOMFILE_" or "VALUESFILE_"
