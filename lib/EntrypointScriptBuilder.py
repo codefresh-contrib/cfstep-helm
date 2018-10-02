@@ -208,7 +208,7 @@ class EntrypointScriptBuilder(object):
         lines.append('PACKAGE="%s"' % package_var)
 
         if self.azure_helm_token is not None:
-            helm_push_command = 'curl --fail -X PUT --data-binary "@${PACKAGE}" ' + self.chart_repo_url + '_blobs/$(basename $PACKAGE)'
+            helm_push_command = 'curl -s --fail -X PUT --data-binary "@${PACKAGE}" ' + self.chart_repo_url + '_blobs/$(basename $PACKAGE)'
         elif self.chart_repo_url.startswith('cm://'):
             helm_push_command = 'helm push $PACKAGE remote'
         elif self.chart_repo_url.startswith('s3://'):
