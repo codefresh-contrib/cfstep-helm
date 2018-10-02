@@ -57,7 +57,10 @@ class EntrypointScriptBuilder(object):
 
         # Extract Helm repos to add from attached Helm repo contexts prefixed with "CF_CTX_" and suffixed with "_URL"
         helm_repos = {}
-        chart_repo_url = self.chart_repo_url
+
+        if not chart_repo_url.startswith('az://'):
+            chart_repo_url = self.chart_repo_url
+
         helm_repo_username = env.get('HELMREPO_USERNAME')
         helm_repo_password = env.get('HELMREPO_PASSWORD')
         for key, val in sorted(env.items()):
@@ -70,15 +73,15 @@ class EntrypointScriptBuilder(object):
                 if repo_url.startswith('http://') or repo_url.startswith('https://'):
                     if helm_repo_username is not None and helm_repo_password is not None:
                         repo_url = repo_url.replace('://', '://%s:%s@' % (helm_repo_username, helm_repo_password), 1)
-                if not repo_url.startswith('az://'):
-                    helm_repos[repo_name] = repo_url
+
+                # Modify azure URL to use https and contain token
+                elif repo_url.startswith('az://'):
+                    self.azure_helm_token = self._get_azure_helm_token(repo_url)
+                    new_repo_url = repo_url.replace('az://', 'https://00000000-0000-0000-0000-000000000000:%s@' % self.azure_helm_token, 1) + 'helm/v1/repo'
+
+                helm_repos[repo_name] = repo_url
                 if self.chart_repo_url is None:
                     chart_repo_url = repo_url
-
-        # Modify azure URL to use https and contain token
-        if chart_repo_url and chart_repo_url.startswith('az://'):
-            self.azure_helm_token = self._get_azure_helm_token(chart_repo_url)
-            chart_repo_url = chart_repo_url.replace('az://', 'https://user:%s@' % self.azure_helm_token, 1) + 'helm/v1/repo'
 
         self.chart_repo_url = chart_repo_url
         self.helm_repos = helm_repos
@@ -87,8 +90,8 @@ class EntrypointScriptBuilder(object):
         if self.chart_repo_url is not None and not self.chart_repo_url.endswith('/'):
             self.chart_repo_url += '/'
 
-    def _get_azure_helm_token(self, chart_repo_url):
-        service = chart_repo_url.replace('az://', '').strip('/')
+    def _get_azure_helm_token(self, repo_url):
+        service = repo_url.replace('az://', '').strip('/')
         sys.stderr.write('Obtaining one-time token for Azure Helm repo service %s ...\n' % service)
         if self.dry_run:
             return 'xXxXx'

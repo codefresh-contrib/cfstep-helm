@@ -37,4 +37,4 @@ Azure context with az protocol gets converted to https and path added
     Set to dictionary   ${env}  CF_CTX_MYREPO_URL   az://my.azure.helm.repo.com
     Run with env   ${env}
     Should have succeeded
-    Output contains   https://user:*****@my.azure.helm.repo.com/helm/v1/repo
+    Output contains   https://00000000-0000-0000-0000-000000000000:*****@my.azure.helm.repo.com/helm/v1/repo
