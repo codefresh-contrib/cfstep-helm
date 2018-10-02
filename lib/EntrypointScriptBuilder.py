@@ -1,3 +1,6 @@
+import json
+import os
+import errno
 
 class EntrypointScriptBuilder(object):
 
@@ -9,9 +12,36 @@ class EntrypointScriptBuilder(object):
         self.chart_version = env.get('CHART_VERSION')
         self.release_name = env.get('RELEASE_NAME')
         self.namespace = env.get('NAMESPACE')
+        self.tiller_namespace = env.get('TILLER_NAMESPACE')
         self.dry_run = env.get('DRY_RUN')
         self.cmd_ps = env.get('CMD_PS')
         self.google_application_credentials_json = env.get('GOOGLE_APPLICATION_CREDENTIALS_JSON')
+        self.chart = env.get('CHART')
+
+        # Save chart data in files
+        if not self.chart is None:
+            self.chart = json.loads(self.chart)
+
+            self.chart_ref = '/opt/chart'
+            os.mkdir('/opt/chart');
+            print('# Chart files will be placed in /opt/chart');
+            for item in self.chart:
+                if item['name'] == 'values':
+                    item['name'] = 'values.yaml'
+                item['name'] = item['name'].replace('Charts/', 'charts/')
+
+                print('# ' + item['name']);
+
+                if not os.path.exists(os.path.dirname('/opt/chart/' + item['name'])):
+                    try:
+                        os.makedirs(os.path.dirname('/opt/chart/' + item['name']))
+                    except OSError as exc:
+                        if exc.errno != errno.EEXIST:
+                            raise
+
+                file = open('/opt/chart/' + item['name'], 'w')
+                file.write(item['data'])
+                file.close()
 
         # Values files (-f/--values) sourced from vars prefixed with "CUSTOMFILE_" or "VALUESFILE_"
         custom_valuesfiles = []
@@ -85,7 +115,7 @@ class EntrypointScriptBuilder(object):
 
     def _build_kubectl_commands(self):
         lines = []
-        if self.action == 'install':
+        if self.action in ['install', 'promotion']:
             if self.kube_context is None:
                 raise Exception('Must set KUBE_CONTEXT in environment (Name of Kubernetes cluster as named in Codefresh)')
             kubectl_cmd = 'kubectl config use-context "%s"' % self.kube_context
@@ -112,8 +142,35 @@ class EntrypointScriptBuilder(object):
 
         if self.action == 'install':
             lines += self._build_helm_install_commands()
+        if self.action == 'promotion':
+            lines += self._build_helm_promotion_commands()
         elif self.action == 'push':
             lines += self._build_helm_push_commands()
+
+        return lines
+
+    def _build_helm_promotion_commands(self):
+        lines = []
+
+        if self.release_name is None:
+            raise Exception('Must set RELEASE_NAME in the environment (desired Helm release name)')
+
+        helm_promote_cmd = 'helm upgrade %s %s --install ' % (self.release_name, self.chart_ref)
+        if self.tiller_namespace is not None:
+            helm_promote_cmd += '--tiller-namespace %s ' % self.tiller_namespace
+        if self.namespace is not None:
+            helm_promote_cmd += '--namespace %s ' % self.namespace
+        for custom_valuesfile in self.custom_valuesfiles:
+            helm_promote_cmd += '--values %s ' % custom_valuesfile
+        for cli_set_key, val in sorted(self.custom_values.items()):
+            helm_promote_cmd += '--set %s=%s ' % (cli_set_key, val)
+        for cli_set_key, val in sorted(self.string_values.items()):
+            helm_promote_cmd += '--set-string %s=%s ' % (cli_set_key, val)
+        if self.cmd_ps is not None:
+            helm_promote_cmd += self.cmd_ps
+        if self.dry_run:
+            helm_promote_cmd = 'echo ' + helm_upgrade_cmd
+        lines.append(helm_promote_cmd)
 
         return lines
 
