@@ -95,7 +95,7 @@ class EntrypointScriptBuilder(object):
         token_url = '%s://%s/api/clusters/aks/helm/repos/%s/token' % (cf_build_url_parsed.scheme, cf_build_url_parsed.netloc, service)
         request = urllib.request.Request(token_url)
         request.add_header('x-access-token', os.getenv('CF_API_KEY'))
-        data = json.load(urllib.request.urlopen(request).read())
+        data = json.load(urllib.request.urlopen(request))
         return data['access_token']
 
     def _build_export_commands(self):
