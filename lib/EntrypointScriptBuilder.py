@@ -75,7 +75,7 @@ class EntrypointScriptBuilder(object):
                 elif repo_url.startswith('az://'):
                     if not self.azure_helm_token:
                         self.azure_helm_token = self._get_azure_helm_token(repo_url)
-                    new_repo_url = repo_url.replace('az://', 'https://00000000-0000-0000-0000-000000000000:%s@' % self.azure_helm_token, 1) + 'helm/v1/repo'
+                    repo_url = repo_url.replace('az://', 'https://00000000-0000-0000-0000-000000000000:%s@' % self.azure_helm_token, 1) + 'helm/v1/repo'
 
                 helm_repos[repo_name] = repo_url
                 if self.chart_repo_url is None:
