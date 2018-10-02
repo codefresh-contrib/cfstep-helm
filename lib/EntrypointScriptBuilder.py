@@ -87,13 +87,15 @@ class EntrypointScriptBuilder(object):
             self.chart_repo_url += '/'
 
     def _get_azure_helm_token(self, chart_repo_url):
-        service = chart_repo_url.replace('az://', '')
+        service = chart_repo_url.replace('az://', '').strip('/')
         sys.stderr.write('Obtaining one-time token for Azure Helm repo service %s ...\n' % service)
         if self.dry_run:
             return 'xXxXx'
         cf_build_url_parsed = urllib.parse.urlparse(os.getenv('CF_BUILD_URL', 'https://g.codefresh.io'))
         token_url = '%s://%s/api/clusters/aks/helm/repos/%s/token' % (cf_build_url_parsed.scheme, cf_build_url_parsed.netloc, service)
-        data = json.load(urllib.request.urlopen(token_url).read())
+        request = urllib.request.Request(token_url)
+        request.add_header('x-access-token', os.getenv('CF_API_KEY'))
+        data = json.load(urllib.request.urlopen(request).read())
         return data['access_token']
 
     def _build_export_commands(self):
