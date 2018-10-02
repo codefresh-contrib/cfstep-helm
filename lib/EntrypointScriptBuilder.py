@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import urllib.request
 import urllib.parse
 
 class EntrypointScriptBuilder(object):
