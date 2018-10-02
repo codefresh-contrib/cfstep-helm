@@ -1,3 +1,6 @@
+import json
+import sys
+import urllib.parse
 
 class EntrypointScriptBuilder(object):
 
@@ -12,6 +15,7 @@ class EntrypointScriptBuilder(object):
         self.dry_run = env.get('DRY_RUN')
         self.cmd_ps = env.get('CMD_PS')
         self.google_application_credentials_json = env.get('GOOGLE_APPLICATION_CREDENTIALS_JSON')
+        self.azure_helm_token = None
 
         # Values files (-f/--values) sourced from vars prefixed with "CUSTOMFILE_" or "VALUESFILE_"
         custom_valuesfiles = []
@@ -67,12 +71,28 @@ class EntrypointScriptBuilder(object):
                 helm_repos[repo_name] = repo_url
                 if self.chart_repo_url is None:
                     chart_repo_url = repo_url
+
+        # Modify azure URL to use https and contain token
+        if chart_repo_url and chart_repo_url.startswith('az://'):
+            self.azure_helm_token = self._get_azure_helm_token(chart_repo_url)
+            chart_repo_url = chart_repo_url.replace('az://', 'https://user:%s@' % self.azure_helm_token, 1) + 'helm/v1/repo'
+
         self.chart_repo_url = chart_repo_url
         self.helm_repos = helm_repos
 
         # Workaround a bug in Helm where url that doesn't end with / breaks --repo flags
         if self.chart_repo_url is not None and not self.chart_repo_url.endswith('/'):
             self.chart_repo_url += '/'
+
+    def _get_azure_helm_token(self, chart_repo_url):
+        service = chart_repo_url.replace('az://', '')
+        sys.stderr.write('Obtaining one-time token for Azure Helm repo service %s ...\n' % service)
+        if self.dry_run:
+            return 'xXxXx'
+        cf_build_url_parsed = urllib.parse.urlparse(os.getenv('CF_BUILD_URL', 'https://g.codefresh.io'))
+        token_url = '%s://%s/api/clusters/aks/helm/repos/%s/token' % (cf_build_url_parsed.scheme, cf_build_url_parsed.netloc, service)
+        data = json.load(urllib.request.urlopen(token_url).read())
+        return data['access_token']
 
     def _build_export_commands(self):
         lines = []
@@ -176,7 +196,9 @@ class EntrypointScriptBuilder(object):
             package_var += '--destination /tmp | cut -d " " -f 8)'
         lines.append('PACKAGE="%s"' % package_var)
 
-        if self.chart_repo_url.startswith('cm://'):
+        if self.azure_helm_token is not None:
+            helm_push_command = 'curl --fail -X PUT --data-binary "@${PACKAGE}" ' + self.chart_repo_url + '_blobs/$(basename $PACKAGE)'
+        elif self.chart_repo_url.startswith('cm://'):
             helm_push_command = 'helm push $PACKAGE remote'
         elif self.chart_repo_url.startswith('s3://'):
             helm_push_command = 'helm s3 push $PACKAGE remote'
