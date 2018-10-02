@@ -16,7 +16,6 @@ steps:
 
       # Helm v2.3.0
       build_2_3_0:
-      stz
         type: build
         image_name: codefresh/cfstep-helm
         build_arguments:
