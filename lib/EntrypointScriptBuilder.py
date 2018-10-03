@@ -128,7 +128,10 @@ class EntrypointScriptBuilder(object):
         sys.stderr.write('Obtaining one-time token for Azure Helm repo service %s ...\n' % service)
         if self.dry_run:
             return 'xXxXx'
-        cf_build_url_parsed = urllib.parse.urlparse(os.getenv('CF_BUILD_URL', 'https://g.codefresh.io'))
+        cf_build_url = os.getenv('CF_BUILD_URL', 'https://g.codefresh.io')
+        if 'local' in cf_build_url:
+            cf_build_url = 'http://' + os.getenv('CF_HOST_IP')
+        cf_build_url_parsed = urllib.parse.urlparse(cf_build_url)
         token_url = '%s://%s/api/clusters/aks/helm/repos/%s/token' % (cf_build_url_parsed.scheme, cf_build_url_parsed.netloc, service)
         request = urllib.request.Request(token_url)
         request.add_header('x-access-token', os.getenv('CF_API_KEY'))
