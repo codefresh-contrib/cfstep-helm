@@ -1,6 +1,7 @@
 import json
 import os
 import errno
+import sys
 
 class EntrypointScriptBuilder(object):
 
@@ -16,7 +17,7 @@ class EntrypointScriptBuilder(object):
         self.dry_run = env.get('DRY_RUN')
         self.cmd_ps = env.get('CMD_PS')
         self.google_application_credentials_json = env.get('GOOGLE_APPLICATION_CREDENTIALS_JSON')
-        self.chart = env.get('CHART')
+        self.chart = env.get('CHART_JSON')
 
         # Save chart data in files
         if not self.chart is None:
@@ -24,13 +25,13 @@ class EntrypointScriptBuilder(object):
 
             self.chart_ref = '/opt/chart'
             os.mkdir('/opt/chart');
-            print('# Chart files will be placed in /opt/chart');
+            sys.stderr.write('Chart files will be placed in /opt/chart\n');
             for item in self.chart:
                 if item['name'] == 'values':
                     item['name'] = 'values.yaml'
                 item['name'] = item['name'].replace('Charts/', 'charts/')
 
-                print('# ' + item['name']);
+                sys.stderr.write(item['name'] + '\n');
 
                 if not os.path.exists(os.path.dirname('/opt/chart/' + item['name'])):
                     try:
