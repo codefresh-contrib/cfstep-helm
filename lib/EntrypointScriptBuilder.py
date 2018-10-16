@@ -278,6 +278,9 @@ class EntrypointScriptBuilder(object):
         else:
             raise Exception('Unsupported protocol in CHART_REPO_URL')
 
+        if self.cmd_ps is not None:
+            helm_push_command += ' ' + self.cmd_ps
+
         if self.dry_run:
             helm_push_command = 'echo ' + helm_push_command
 
