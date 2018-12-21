@@ -24,6 +24,8 @@ FROM arm64v8/alpine:3.6
 
 ARG KUBE_VERSION="v1.8.1"
 
+ARG HELM_VERSION
+
 ENV FILENAME="helm-v${HELM_VERSION}-linux-arm64.tar.gz"
 
 RUN apk add --update ca-certificates && update-ca-certificates \
