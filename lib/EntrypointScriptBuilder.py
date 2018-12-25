@@ -17,6 +17,7 @@ class EntrypointScriptBuilder(object):
         self.namespace = env.get('NAMESPACE')
         self.tiller_namespace = env.get('TILLER_NAMESPACE')
         self.dry_run = env.get('DRY_RUN')
+        self.recreate_pods = env.get('RECREATE_PODS')
         self.cmd_ps = env.get('CMD_PS')
         self.google_application_credentials_json = env.get('GOOGLE_APPLICATION_CREDENTIALS_JSON')
         self.chart = env.get('CHART_JSON')
@@ -200,6 +201,8 @@ class EntrypointScriptBuilder(object):
             helm_promote_cmd += '--set %s=%s ' % (cli_set_key, val)
         for cli_set_key, val in sorted(self.string_values.items()):
             helm_promote_cmd += '--set-string %s=%s ' % (cli_set_key, val)
+        if self.recreate_pods:
+            helm_promote_cmd += '--recreate-pods '
         if self.cmd_ps is not None:
             helm_promote_cmd += self.cmd_ps
         if self.dry_run:
@@ -234,6 +237,8 @@ class EntrypointScriptBuilder(object):
             helm_upgrade_cmd += '--set %s=%s ' % (cli_set_key, val)
         for cli_set_key, val in sorted(self.string_values.items()):
             helm_upgrade_cmd += '--set-string %s=%s ' % (cli_set_key, val)
+        if self.recreate_pods:
+            helm_upgrade_cmd += '--recreate-pods '
         if self.cmd_ps is not None:
             helm_upgrade_cmd += self.cmd_ps
         if self.dry_run:
