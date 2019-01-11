@@ -13,6 +13,7 @@ class EntrypointScriptBuilder(object):
         self.chart_ref = env.get('CHART_REF', env.get('CHART_NAME'))
         self.chart_repo_url = env.get('CHART_REPO_URL')
         self.chart_version = env.get('CHART_VERSION')
+        self.app_version = env.get('APP_VERSION')
         self.release_name = env.get('RELEASE_NAME')
         self.namespace = env.get('NAMESPACE')
         self.tiller_namespace = env.get('TILLER_NAMESPACE')
@@ -264,6 +265,8 @@ class EntrypointScriptBuilder(object):
             package_var = '$(helm package %s ' % self.chart_ref
             if self.chart_version is not None:
                 package_var += '--version ' + self.chart_version + ' '
+            if self.app_version is not None:
+                package_var += '--app-version ' + self.app_version + ' '
             package_var += '--destination /tmp | cut -d " " -f 8)'
         lines.append('PACKAGE="%s"' % package_var)
 
