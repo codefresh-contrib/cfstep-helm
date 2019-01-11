@@ -38,6 +38,19 @@ Install chart with CHART_VERSION
     Output contains   helm upgrade
     Output contains   --version 1.1.1
 
+Install chart with RECREATE_RODS
+    &{env}=   Create dictionary
+    Set to dictionary   ${env}  CHART_REF   mychartref
+    Set to dictionary   ${env}  RELEASE_NAME   my-release
+    Set to dictionary   ${env}  KUBE_CONTEXT   my-context
+    Set to dictionary   ${env}  DRY_RUN   true
+    Set to dictionary   ${env}  RECREATE_PODS   true
+    Set to dictionary   ${env}  CHART_VERSION   1.1.1
+    Run with env   ${env}
+    Should have succeeded
+    Output contains   helm upgrade
+    Output contains   --recreate-pods
+
 Install chart with NAMESPACE
     &{env}=   Create dictionary
     Set to dictionary   ${env}  CHART_REF   mychartref
