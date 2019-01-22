@@ -465,7 +465,7 @@ steps:
           - master
 
   # Helm v2.12.2
-  push_2_12_1:
+  push_2_12_2:
     type: push
     stage: push
     candidate: ${{build_2_12_2}}
