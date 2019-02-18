@@ -136,14 +136,14 @@ class EntrypointScriptBuilder(object):
         cf_build_url_parsed = urllib.parse.urlparse(cf_build_url)
         token_url = '%s://%s/api/clusters/aks/helm/repos/%s/token' % (cf_build_url_parsed.scheme, cf_build_url_parsed.netloc, service)
         request = urllib.request.Request(token_url)
-        request.add_header('Authorization', os.getenv('CF_API_KEY'))
+        request.add_header('x-access-token', os.getenv('CF_API_KEY'))
         data = json.load(urllib.request.urlopen(request))
         return data['access_token']
 
     def _build_export_commands(self):
         lines = []
         lines.append('export HELM_REPO_ACCESS_TOKEN=$CF_API_KEY')
-        lines.append('export HELM_REPO_AUTH_HEADER=Authorization')
+        lines.append('export HELM_REPO_AUTH_HEADER=x-access-token')
         if self.google_application_credentials_json is not None:
             lines.append('echo -E $GOOGLE_APPLICATION_CREDENTIALS_JSON > /tmp/google-creds.json')
             lines.append('export GOOGLE_APPLICATION_CREDENTIALS=/tmp/google-creds.json')
