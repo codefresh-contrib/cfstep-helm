@@ -12,7 +12,7 @@ Install local chart no overrides
     Set to dictionary   ${env}  DRY_RUN   true
     Run with env   ${env}
     Should have succeeded
-    Output contains   helm upgrade
+    Output contains   helm secrets upgrade
 
 Install remote chart no overrides using CHART_REPO_URL
     &{env}=   Create dictionary
@@ -23,7 +23,7 @@ Install remote chart no overrides using CHART_REPO_URL
     Set to dictionary   ${env}  CHART_REPO_URL   https://myhelmrepo.com
     Run with env   ${env}
     Should have succeeded
-    Output contains   helm upgrade
+    Output contains   helm secrets upgrade
     Output contains   --repo https://myhelmrepo.com
 
 Install chart with CHART_VERSION
@@ -35,7 +35,7 @@ Install chart with CHART_VERSION
     Set to dictionary   ${env}  CHART_VERSION   1.1.1
     Run with env   ${env}
     Should have succeeded
-    Output contains   helm upgrade
+    Output contains   helm secrets upgrade
     Output contains   --version 1.1.1
 
 Install chart with RECREATE_RODS
@@ -48,7 +48,7 @@ Install chart with RECREATE_RODS
     Set to dictionary   ${env}  CHART_VERSION   1.1.1
     Run with env   ${env}
     Should have succeeded
-    Output contains   helm upgrade
+    Output contains   helm secrets upgrade
     Output contains   --recreate-pods
 
 Install chart with NAMESPACE
@@ -60,7 +60,7 @@ Install chart with NAMESPACE
     Set to dictionary   ${env}  NAMESPACE   staging
     Run with env   ${env}
     Should have succeeded
-    Output contains   helm upgrade
+    Output contains   helm secrets upgrade
     Output contains   --namespace staging
 
 Install detects CUSTOMFILE_ and VALUESFILE_ environment vars and converts correctly
@@ -75,7 +75,7 @@ Install detects CUSTOMFILE_ and VALUESFILE_ environment vars and converts correc
     Set to dictionary   ${env}  VALUESFILE_FILE2    my/values/file2.yaml
     Run with env   ${env}
     Should have succeeded
-    Output contains   helm upgrade
+    Output contains   helm secrets upgrade
     Output contains   --values my/custom/file1.yaml
     Output contains   --values my/custom/file2.yaml
     Output contains   --values my/values/file1.yaml
@@ -95,7 +95,7 @@ Install detects CUSTOM_, VALUE_ and VALUESTRING_ environment vars and converts c
 
     Run with env   ${env}
     Should have succeeded
-    Output contains   helm upgrade
+    Output contains   helm secrets upgrade
     Output contains   --set myimage.pullPolicy=Always
     Output contains   --set myimage.customField=Other
     Output contains   --set-string myimage.tag=123456
@@ -111,5 +111,5 @@ CMD_PS is passed to the end of install command
     Set to dictionary   ${env}  CMD_PS   --my-fake-flag
     Run with env   ${env}
     Should have succeeded
-    Output contains   helm upgrade
+    Output contains   helm secrets upgrade
     Output contains   --my-fake-flag

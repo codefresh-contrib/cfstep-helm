@@ -70,6 +70,6 @@ Default ACTION is install
     Set to dictionary   ${env}  DRY_RUN   true
     Run with env   ${env}
     Should have succeeded
-    Output contains   helm upgrade
+    Output contains   helm secrets upgrade
 
 
