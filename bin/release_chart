@@ -17,20 +17,20 @@ mask_cmd() {
     (set -o pipefail && $@ | sed 's/:[^\/][^@]*@/:\*\*\*\*\*@/g')
 }
 
-CFSTEP_HELM_ROOTDIR="${CFSTEP_HELM_ROOTDIR:-/opt}"
+CFSTEP_HELM_ROOTDIR="${CFSTEP_HELM_ROOTDIR:-C:\opt}"
 
-PYTHONPATH="${CFSTEP_HELM_ROOTDIR}/lib" "${CFSTEP_HELM_ROOTDIR}/bin/build_entrypoint_script" > /tmp/run
+PYTHONPATH="${CFSTEP_HELM_ROOTDIR}\lib" python "${CFSTEP_HELM_ROOTDIR}\bin\build_entrypoint_script" > C:\tmp\run
 
 echo ""
 echo "Running the following script:"
 echo "----------------------------"
-mask_cmd cat /tmp/run
+mask_cmd cat C:\tmp\run
 echo "----------------------------"
 echo ""
 
 if [ "$(basename $0)" = "release_chart" ]; then
-    chmod +x /tmp/run
-    mask_cmd /tmp/run
+   mask_cmd bash C:\tmp\run
 else
-    . /tmp/run
+    bash C:\tmp\run
 fi
+

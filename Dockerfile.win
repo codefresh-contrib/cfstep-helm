@@ -1,0 +1,39 @@
+# escape=`
+FROM microsoft/windowsservercore
+
+# set powershell execution policy
+SHELL ["powershell -ExecutionPolicy Bypass", "-command"]
+
+# set default tls version
+RUN [Net.ServicePointManager]::SecurityProtocol = 'tls12, tls11, tls'
+
+# set choco option
+ENV chocolateyUseWindowsCompression false
+
+#Download and install choco
+RUN Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+
+# install cygwin,python3
+RUN choco install cygwin -y
+RUN choco install python3 -y
+RUN [Environment]::SetEnvironmentVariable('Path', $env:Path + ';C:\tools\cygwin\bin', [EnvironmentVariableTarget]::Machine)
+RUN refreshenv
+
+# download and install kubectl
+RUN Invoke-WebRequest https://storage.googleapis.com/kubernetes-release/release/v1.8.1/bin/windows/amd64/kubectl.exe -OutFile 'C:\tools\cygwin\bin\kubectl.exe'
+
+# download and install helm
+RUN Invoke-WebRequest https://storage.googleapis.com/kubernetes-helm/helm-v2.9.0-windows-amd64.zip -OutFile helm.zip
+RUN Expand-Archive helm.zip -DestinationPath 'C:\'
+RUN [Environment]::SetEnvironmentVariable('Path', $env:Path + ';C:\windows-amd64', [EnvironmentVariableTarget]::Machine)
+RUN refreshenv
+
+# init helm
+RUN helm init --client-only
+
+COPY bin/* /opt/bin/
+COPY lib/* /opt/lib/
+
+RUN [Environment]::SetEnvironmentVariable('PYTHONPATH', $env:PYTHONPATH + ';C:\opt\lib', [EnvironmentVariableTarget]::Machine)
+
+CMD bash c:\opt\bin\release_chart
