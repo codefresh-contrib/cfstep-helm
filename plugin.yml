@@ -1,6 +1,6 @@
 title: Release a Helm chart
-image: codefresh/cfstep-helm:2.9.0 
-version: 0.1.0
+image: codefresh/cfstep-helm:2.14.3 
+version: 0.1.1
 description: 'Release a Helm chart (update or install)'
 keywords:
   - helm
