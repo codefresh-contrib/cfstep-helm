@@ -230,6 +230,8 @@ class EntrypointScriptBuilder(object):
             helm_upgrade_cmd += '--repo %s ' % self.chart_repo_url
         if self.chart_version is not None:
             helm_upgrade_cmd += '--version %s ' % self.chart_version
+        if self.tiller_namespace is not None:
+            helm_upgrade_cmd += '--tiller-namespace %s ' % self.tiller_namespace
         if self.namespace is not None:
             helm_upgrade_cmd += '--namespace %s ' % self.namespace
         for custom_valuesfile in self.custom_valuesfiles:
