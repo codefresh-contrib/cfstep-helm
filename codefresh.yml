@@ -13,6 +13,7 @@ steps:
   # Helm v2.3.0
   build_2_3_0:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
@@ -22,6 +23,7 @@ steps:
   # Helm v2.3.1
   build_2_3_1:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
@@ -31,6 +33,7 @@ steps:
   # Helm v2.4.0
   build_2_4_0:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
@@ -40,6 +43,7 @@ steps:
   # Helm v2.4.1
   build_2_4_1:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
@@ -49,6 +53,7 @@ steps:
   # Helm v2.4.2
   build_2_4_2:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
@@ -58,6 +63,7 @@ steps:
   # Helm v2.5.0
   build_2_5_0:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
@@ -67,6 +73,7 @@ steps:
   # Helm v2.5.1
   build_2_5_1:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
@@ -76,6 +83,7 @@ steps:
   # Helm v2.6.0
   build_2_6_0:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
@@ -85,6 +93,7 @@ steps:
   # Helm v2.6.1
   build_2_6_1:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
@@ -94,6 +103,7 @@ steps:
   # Helm v2.6.2
   build_2_6_2:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
@@ -103,6 +113,7 @@ steps:
   # Helm v2.7.0
   build_2_7_0:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
@@ -112,6 +123,7 @@ steps:
   # Helm v2.7.1
   build_2_7_1:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
@@ -121,6 +133,7 @@ steps:
   # Helm v2.7.2
   build_2_7_2:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
@@ -130,6 +143,7 @@ steps:
   # Helm v2.8.0
   build_2_8_0:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
@@ -139,6 +153,7 @@ steps:
   # Helm v2.8.1
   build_2_8_1:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
@@ -148,6 +163,7 @@ steps:
   # Helm v2.8.2
   build_2_8_2:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
@@ -157,6 +173,7 @@ steps:
   # Helm v2.9.0
   build_2_9_0:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
@@ -166,6 +183,7 @@ steps:
   # Helm v2.9.1
   build_2_9_1:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
@@ -175,6 +193,7 @@ steps:
   # Helm v2.10.0
   build_2_10_0:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
@@ -184,6 +203,7 @@ steps:
   # Helm v2.11.0
   build_2_11_0:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
@@ -193,6 +213,7 @@ steps:
   # Helm v2.12.1
   build_2_12_1:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
@@ -202,6 +223,7 @@ steps:
   # Helm v2.12.2
   build_2_12_2:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
@@ -211,15 +233,37 @@ steps:
   # Helm v2.12.3
   build_2_12_3:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
       - HELM_VERSION=2.12.3
     tag: 2.12.3-${{CF_SHORT_REVISION}}
-  
+
+  # Helm v2.13.0
+  build_2_13_0:
+    type: build
+    fail_fast: false
+    stage: build
+    image_name: codefresh/cfstep-helm
+    build_arguments:
+      - HELM_VERSION=2.13.0
+    tag: 2.13.0-${{CF_SHORT_REVISION}}
+
+  # Helm v2.13.1
+  build_2_13_1:
+    type: build
+    fail_fast: false
+    stage: build
+    image_name: codefresh/cfstep-helm
+    build_arguments:
+      - HELM_VERSION=2.13.1
+    tag: 2.13.1-${{CF_SHORT_REVISION}}
+
   # Helm v2.14.0
   build_2_14_0:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
@@ -229,6 +273,7 @@ steps:
   # Helm v2.14.1
   build_2_14_1:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
@@ -238,6 +283,7 @@ steps:
   # Helm v2.14.2
   build_2_14_2:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
@@ -247,6 +293,7 @@ steps:
   # Helm v2.14.3
   build_2_14_3:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
@@ -256,16 +303,18 @@ steps:
   # Helm v3.0.0-beta.2
   build_3_0_0_beta_2:
     type: build
+    fail_fast: false
     stage: build
     image_name: codefresh/cfstep-helm
     build_arguments:
       - HELM_VERSION=3.0.0-beta.2
     tag: 3.0.0-beta.2-${{CF_SHORT_REVISION}}
-  
+
   # Helm v3.0.0-beta.3
   build_3_0_0_beta_3:
     type: build
     stage: build
+    fail_fast: false
     image_name: codefresh/cfstep-helm
     build_arguments:
       - HELM_VERSION=3.0.0-beta.3
@@ -275,6 +324,7 @@ steps:
   build_3_0_0_beta_4:
     type: build
     stage: build
+    fail_fast: false
     image_name: codefresh/cfstep-helm
     build_arguments:
       - HELM_VERSION=3.0.0-beta.4
@@ -287,6 +337,7 @@ steps:
   # Helm v2.3.0
   push_2_3_0:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_3_0}}
     registry: dockerhub
@@ -299,6 +350,7 @@ steps:
   # Helm v2.3.1
   push_2_3_1:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_3_1}}
     registry: dockerhub
@@ -311,6 +363,7 @@ steps:
   # Helm v2.4.0
   push_2_4_0:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_4_0}}
     registry: dockerhub
@@ -323,6 +376,7 @@ steps:
   # Helm v2.4.1
   push_2_4_1:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_4_1}}
     registry: dockerhub
@@ -335,6 +389,7 @@ steps:
   # Helm v2.4.2
   push_2_4_2:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_4_2}}
     registry: dockerhub
@@ -347,6 +402,7 @@ steps:
   # Helm v2.5.0
   push_2_5_0:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_5_0}}
     registry: dockerhub
@@ -359,6 +415,7 @@ steps:
   # Helm v2.5.1
   push_2_5_1:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_5_1}}
     registry: dockerhub
@@ -371,6 +428,7 @@ steps:
   # Helm v2.6.0
   push_2_6_0:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_6_0}}
     registry: dockerhub
@@ -383,6 +441,7 @@ steps:
   # Helm v2.6.1
   push_2_6_1:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_6_1}}
     registry: dockerhub
@@ -395,6 +454,7 @@ steps:
   # Helm v2.6.2
   push_2_6_2:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_6_2}}
     registry: dockerhub
@@ -407,6 +467,7 @@ steps:
   # Helm v2.7.0
   push_2_7_0:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_7_0}}
     registry: dockerhub
@@ -419,6 +480,7 @@ steps:
   # Helm v2.7.1
   push_2_7_1:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_7_1}}
     registry: dockerhub
@@ -431,6 +493,7 @@ steps:
   # Helm v2.7.2
   push_2_7_2:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_7_2}}
     registry: dockerhub
@@ -443,6 +506,7 @@ steps:
   # Helm v2.8.0
   push_2_8_0:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_8_0}}
     registry: dockerhub
@@ -455,6 +519,7 @@ steps:
   # Helm v2.8.1
   push_2_8_1:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_8_1}}
     registry: dockerhub
@@ -467,6 +532,7 @@ steps:
   # Helm v2.8.2
   push_2_8_2:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_8_2}}
     registry: dockerhub
@@ -479,6 +545,7 @@ steps:
   # Helm v2.9.0
   push_2_9_0:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_9_0}}
     registry: dockerhub
@@ -491,6 +558,7 @@ steps:
   # Helm v2.9.1
   push_2_9_1:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_9_1}}
     registry: dockerhub
@@ -503,6 +571,7 @@ steps:
   # Helm v2.10.0
   push_2_10_0:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_10_0}}
     registry: dockerhub
@@ -515,6 +584,7 @@ steps:
   # Helm v2.11.0
   push_2_11_0:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_11_0}}
     registry: dockerhub
@@ -527,6 +597,7 @@ steps:
   # Helm v2.12.1
   push_2_12_1:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_12_1}}
     registry: dockerhub
@@ -539,6 +610,7 @@ steps:
   # Helm v2.12.2
   push_2_12_2:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_12_2}}
     registry: dockerhub
@@ -551,6 +623,7 @@ steps:
   # Helm v2.12.3
   push_2_12_3:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_12_3}}
     registry: dockerhub
@@ -563,6 +636,7 @@ steps:
   # Helm v2.13.0
   push_2_13_0:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_13_0}}
     registry: dockerhub
@@ -575,6 +649,7 @@ steps:
   # Helm v2.13.1
   push_2_13_1:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_13_1}}
     registry: dockerhub
@@ -587,6 +662,7 @@ steps:
   # Helm v2.14.0
   push_2_14_0:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_14_0}}
     registry: dockerhub
@@ -599,6 +675,7 @@ steps:
   # Helm v2.14.1
   push_2_14_1:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_14_1}}
     registry: dockerhub
@@ -611,6 +688,7 @@ steps:
   # Helm v2.14.2
   push_2_14_2:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_14_2}}
     registry: dockerhub
@@ -623,6 +701,7 @@ steps:
   # Helm v2.14.3
   push_2_14_3:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_14_3}}
     registry: dockerhub
@@ -635,6 +714,7 @@ steps:
   # Helm 3.0.0-beta.2
   push_3_0_0_beta_2:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_3_0_0_beta_2}}
     registry: dockerhub
@@ -648,6 +728,7 @@ steps:
   push_3_0_0_beta_3:
     type: push
     stage: push
+    fail_fast: false
     candidate: ${{build_3_0_0_beta_3}}
     registry: dockerhub
     tag: 3.0.0-beta.3
@@ -671,6 +752,7 @@ steps:
   # Latest tag (2.14.3)
   push_latest:
     type: push
+    fail_fast: false
     stage: push
     candidate: ${{build_2_14_3}}
     registry: dockerhub
