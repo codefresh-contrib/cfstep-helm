@@ -280,6 +280,15 @@ steps:
       - HELM_VERSION=3.0.0-beta.4
     tag: 3.0.0-beta.4-${{CF_SHORT_REVISION}}
 
+  # Helm v3.0.0
+  build_3_0_0:
+    type: build
+    stage: build
+    image_name: codefresh/cfstep-helm
+    build_arguments:
+      - HELM_VERSION=3.0.0
+    tag: 3.0.0-${{CF_SHORT_REVISION}}
+
   # |---------------------------------------------|
   # | Stage 2: Push all Docker Images built above |
   # |---------------------------------------------|
@@ -675,6 +684,18 @@ steps:
     candidate: ${{build_2_14_3}}
     registry: dockerhub
     tag: latest
+    when:
+      branch:
+        only:
+          - master
+
+  # Helm 3.0.0
+  push_3_0_0:
+    type: push
+    stage: push
+    candidate: ${{build_3_0_0}}
+    registry: dockerhub
+    tag: 3.0.0
     when:
       branch:
         only:
