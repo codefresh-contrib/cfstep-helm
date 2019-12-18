@@ -24,6 +24,7 @@ steps:
         2.14.3
         3.0.0-beta.2
         3.0.0-beta.3
+        3.0.2
     when:
       condition:
         all:
