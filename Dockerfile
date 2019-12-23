@@ -1,4 +1,7 @@
 ARG HELM_VERSION
+ARG S3_PLUGIN_VERSION
+ARG GCS_PLUGIN_VERSION
+ARG PUSH_PLUGIN_VERSION
 
 FROM golang:latest as setup
 ARG HELM_VERSION
@@ -7,9 +10,9 @@ RUN curl -L "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz" -o he
     && tar -zxvf helm.tar.gz \
     && mv ./linux-amd64/helm /usr/local/bin/helm \
     && bash -c 'if [[ "${HELM_VERSION}" == 2* ]]; then helm init --client-only; else echo "using helm3, no need to initialize helm"; fi' \
-    && helm plugin install https://github.com/hypnoglow/helm-s3.git \
-    && helm plugin install https://github.com/nouney/helm-gcs.git \
-    && helm plugin install https://github.com/chartmuseum/helm-push.git
+    && helm plugin install https://github.com/hypnoglow/helm-s3.git --version=${S3_PLUGIN_VERSION} \
+    && helm plugin install https://github.com/nouney/helm-gcs.git --version=${GCS_PLUGIN_VERSION} \
+    && helm plugin install https://github.com/chartmuseum/helm-push.git --version=${PUSH_PLUGIN_VERSION}
 
 # Run acceptance tests
 COPY Makefile Makefile
