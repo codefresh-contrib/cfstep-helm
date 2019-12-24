@@ -22,6 +22,7 @@ class EntrypointScriptBuilder(object):
         self.cmd_ps = env.get('CMD_PS')
         self.google_application_credentials_json = env.get('GOOGLE_APPLICATION_CREDENTIALS_JSON')
         self.chart = env.get('CHART_JSON')
+        self.helm_version = env.get ('HELM_VERSION')
         self.azure_helm_token = None
 
         # Save chart data in files
@@ -192,8 +193,9 @@ class EntrypointScriptBuilder(object):
             raise Exception('Must set RELEASE_NAME in the environment (desired Helm release name)')
 
         helm_promote_cmd = 'helm upgrade %s %s --install ' % (self.release_name, self.chart_ref)
-        if self.tiller_namespace is not None:
-            helm_promote_cmd += '--tiller-namespace %s ' % self.tiller_namespace
+        if self.helm_version.startswith('2.'):
+            if self.tiller_namespace is not None:
+                helm_promote_cmd += '--tiller-namespace %s ' % self.tiller_namespace
         if self.namespace is not None:
             helm_promote_cmd += '--namespace %s ' % self.namespace
         for custom_valuesfile in self.custom_valuesfiles:
@@ -230,8 +232,9 @@ class EntrypointScriptBuilder(object):
             helm_upgrade_cmd += '--repo %s ' % self.chart_repo_url
         if self.chart_version is not None:
             helm_upgrade_cmd += '--version %s ' % self.chart_version
-        if self.tiller_namespace is not None:
-            helm_upgrade_cmd += '--tiller-namespace %s ' % self.tiller_namespace
+        if self.helm_version.startswith('2.'):
+            if self.tiller_namespace is not None:
+                helm_upgrade_cmd += '--tiller-namespace %s ' % self.tiller_namespace
         if self.namespace is not None:
             helm_upgrade_cmd += '--namespace %s ' % self.namespace
         for custom_valuesfile in self.custom_valuesfiles:
