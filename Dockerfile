@@ -11,12 +11,13 @@ RUN echo "HELM_VERSION is set to: ${HELM_VERSION}"
 RUN curl -L "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz" -o helm.tar.gz \
     && tar -zxvf helm.tar.gz \
     && mv ./linux-amd64/helm /usr/local/bin/helm \
-    && helm init --client-only \
+    && curl -L https://storage.googleapis.com/kubernetes-release/release/${KUBE_VERSION}/bin/linux/amd64/kubectl -o /usr/local/bin/kubectl \
+    && chmod +x /usr/local/bin/kubectl
+RUN bash -c 'if [[ "${HELM_VERSION}" == 2* ]]; then helm init --client-only; else echo "using helm3, no need to initialize helm"; fi' \
     && helm plugin install https://github.com/hypnoglow/helm-s3.git \
     && helm plugin install https://github.com/nouney/helm-gcs.git \
     && helm plugin install https://github.com/chartmuseum/helm-push.git \
-    && curl -L https://storage.googleapis.com/kubernetes-release/release/${KUBE_VERSION}/bin/linux/amd64/kubectl -o /usr/local/bin/kubectl \
-    && chmod +x /usr/local/bin/kubectl
+
 # Run acceptance tests
 COPY Makefile Makefile
 COPY bin/ bin/
