@@ -8,7 +8,7 @@ FROM golang:latest as setup
 ARG HELM_VERSION
 ARG KUBE_VERSION
 RUN echo "HELM_VERSION is set to: ${HELM_VERSION}"
-RUN curl -L "https://storage.googleapis.com/kubernetes-helm/helm-v${HELM_VERSION}-linux-amd64.tar.gz" -o helm.tar.gz \
+RUN curl -L "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz" -o helm.tar.gz \
     && tar -zxvf helm.tar.gz \
     && mv ./linux-amd64/helm /usr/local/bin/helm \
     && helm init --client-only \
