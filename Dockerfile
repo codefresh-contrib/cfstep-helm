@@ -26,6 +26,7 @@ RUN apt-get update \
 FROM codefresh/kube-helm:${HELM_VERSION}
 ARG HELM_VERSION
 COPY --from=setup /temp /root/.helm/* /root/.helm/
+COPY --from=setup /temp /root/.cache/helm/* /root/.cache/helm/
 COPY bin/* /opt/bin/
 RUN chmod +x /opt/bin/*
 COPY lib/* /opt/lib/
