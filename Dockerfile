@@ -32,8 +32,8 @@ RUN chmod +x /opt/bin/*
 COPY lib/* /opt/lib/
 
 # Install Python3
-RUN apk add --no-cache python3 \
-    && rm -rf /root/.cache
+#RUN apk add --no-cache python3 \
+ #   && rm -rf /root/.cache
 
 ENV HELM_VERSION ${HELM_VERSION}
 
