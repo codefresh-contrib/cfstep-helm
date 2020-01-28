@@ -304,6 +304,5 @@ class EntrypointScriptBuilder(object):
         lines += self._build_export_commands()
         lines += self._build_kubectl_commands()
         lines += ['helm plugin list']
-        lines += ['helm repo list']
         lines += self._build_helm_commands()
         return '\n'.join(lines)
