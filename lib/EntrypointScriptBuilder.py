@@ -145,6 +145,7 @@ class EntrypointScriptBuilder(object):
         lines.append('export HELM_REPO_ACCESS_TOKEN=$CF_API_KEY')
         lines.append('export HELM_REPO_AUTH_HEADER=Authorization')
         lines.append('export HELM_PLUGINS=/root/.helm/plugins')
+        lines.append('export AWS_DEFAULT_REGION=us-west-2')
         if self.google_application_credentials_json is not None:
             lines.append('echo -E $GOOGLE_APPLICATION_CREDENTIALS_JSON > /tmp/google-creds.json')
             lines.append('export GOOGLE_APPLICATION_CREDENTIALS=/tmp/google-creds.json')
