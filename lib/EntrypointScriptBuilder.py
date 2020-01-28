@@ -277,7 +277,6 @@ class EntrypointScriptBuilder(object):
                 package_var += '--app-version ' + self.app_version + ' '
             package_var += '--destination /tmp | cut -d " " -f 8)'
         lines.append('PACKAGE="%s"' % package_var)
-        lines.append('helm plugin list')
 
         if self.azure_helm_token is not None:
             helm_push_command = 'curl --fail -X PUT --data-binary "@${PACKAGE}" ' + self.chart_repo_url + '_blobs/$(basename $PACKAGE)' + ' || curl --fail -X PATCH --data-binary "@${PACKAGE}" ' + self.chart_repo_url + '_blobs/$(basename $PACKAGE)'
@@ -303,6 +302,7 @@ class EntrypointScriptBuilder(object):
     def build(self):
         lines = ['#!/bin/bash -e']
         lines += self._build_export_commands()
+        lines.append('helm plugin list')
         lines += self._build_kubectl_commands()
         lines += self._build_helm_commands()
         return '\n'.join(lines)
