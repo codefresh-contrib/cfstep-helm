@@ -40,6 +40,8 @@ COPY lib/* /opt/lib/
 # Install Python3
 RUN apk add --no-cache python3
 
+RUN export HELM_PLUGINS=/root/.helm/plugins
+
 ENV HELM_VERSION ${HELM_VERSION}
 
 ENTRYPOINT ["/opt/bin/release_chart"]
