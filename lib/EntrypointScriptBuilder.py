@@ -181,8 +181,8 @@ class EntrypointScriptBuilder(object):
             lines += self._build_helm_install_commands()
         if self.action == 'promotion':
             lines += self._build_helm_promotion_commands()
-        # elif self.action == 'push':
-        #     lines += self._build_helm_push_commands()
+        elif self.action == 'push':
+            lines += self._build_helm_push_commands()
 
         return lines
 
