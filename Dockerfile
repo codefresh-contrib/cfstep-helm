@@ -31,6 +31,8 @@ COPY bin/* /opt/bin/
 RUN chmod +x /opt/bin/*
 COPY lib/* /opt/lib/
 
+ENV XDG_CACHE_HOME=/root/.helm/
+
 # Install Python3
 RUN apk add --no-cache python3
 
