@@ -6,6 +6,7 @@ import urllib.request
 import urllib.parse
 
 from Helm2CommandBuilder import Helm2CommandBuilder
+from Helm3CommandBuilder import Helm3CommandBuilder
 
 
 class EntrypointScriptBuilder(object):
@@ -293,10 +294,16 @@ class EntrypointScriptBuilder(object):
 
         return lines
 
+    def _select_helm_command_builder(self):
+        if self.helm_version.startswith('3.'):
+            return Helm3CommandBuilder
+        else:
+            return Helm2CommandBuilder
+
     def build(self):
         print(self.helm_version)
         lines = ['#!/bin/bash -e']
-        lines += Helm2CommandBuilder().build_export_commands(self.google_application_credentials_json)
+        lines += self._select_helm_command_builder().build_export_commands(self.google_application_credentials_json)
         lines += self._build_kubectl_commands()
         lines += self._build_helm_commands()
         return '\n'.join(lines)
