@@ -8,6 +8,11 @@ ARG HELM_VERSION
 ARG S3_PLUGIN_VERSION
 ARG GCS_PLUGIN_VERSION
 ARG PUSH_PLUGIN_VERSION
+
+# for helm 3
+ENV XDG_CACHE_HOME=/root/.helm
+ENV XDG_DATA_HOME=/root/.helm
+
 RUN echo "HELM_VERSION is set to: ${HELM_VERSION}" && mkdir /temp
 RUN curl -L "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz" -o helm.tar.gz \
     && tar -zxvf helm.tar.gz \
