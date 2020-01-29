@@ -26,8 +26,10 @@ RUN curl -L "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz" -o he
 COPY Makefile Makefile
 COPY bin/ bin/
 COPY lib/ lib/
+COPY acceptance_tests/ acceptance_tests/
 RUN apt-get update \
-    && apt-get install -y python3-venv
+    && apt-get install -y python3-venv \
+    && make acceptance
 
 FROM codefresh/kube-helm:${HELM_VERSION}
 ARG HELM_VERSION
@@ -36,9 +38,9 @@ COPY bin/* /opt/bin/
 RUN chmod +x /opt/bin/*
 COPY lib/* /opt/lib/
 
-
 # Install Python3
-RUN apk add --no-cache python3
+RUN apk add --no-cache python3 \
+    && rm -rf /root/.cache
 
 ENV HELM_VERSION ${HELM_VERSION}
 

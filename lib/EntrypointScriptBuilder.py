@@ -5,6 +5,9 @@ import sys
 import urllib.request
 import urllib.parse
 
+from lib.command_builder.Helm2CommandBuilder import Helm2CommandBuilder
+
+
 class EntrypointScriptBuilder(object):
 
     def __init__(self, env):
@@ -22,6 +25,7 @@ class EntrypointScriptBuilder(object):
         self.cmd_ps = env.get('CMD_PS')
         self.google_application_credentials_json = env.get('GOOGLE_APPLICATION_CREDENTIALS_JSON')
         self.chart = env.get('CHART_JSON')
+        self.helm_version = env.get('HELM_VERSION')
         self.azure_helm_token = None
 
         # Save chart data in files
@@ -29,7 +33,7 @@ class EntrypointScriptBuilder(object):
             self.chart = json.loads(self.chart)
 
             self.chart_ref = '/opt/chart'
-            os.mkdir('/opt/chart');
+            os.mkdir('/opt/chart')
             sys.stderr.write('Chart files will be placed in /opt/chart\n');
             for item in self.chart:
                 if item['name'] == 'values':
@@ -140,17 +144,6 @@ class EntrypointScriptBuilder(object):
         data = json.load(urllib.request.urlopen(request))
         return data['access_token']
 
-    def _build_export_commands(self):
-        lines = []
-        lines.append('export HELM_REPO_ACCESS_TOKEN=$CF_API_KEY')
-        lines.append('export HELM_REPO_AUTH_HEADER=Authorization')
-        lines.append('export HELM_PLUGINS=/root/.helm/plugins')
-        lines.append('export AWS_DEFAULT_REGION=us-west-2')
-        if self.google_application_credentials_json is not None:
-            lines.append('echo -E $GOOGLE_APPLICATION_CREDENTIALS_JSON > /tmp/google-creds.json')
-            lines.append('export GOOGLE_APPLICATION_CREDENTIALS=/tmp/google-creds.json')
-        return lines
-
     def _build_kubectl_commands(self):
         lines = []
         if self.action in ['install', 'promotion']:
@@ -209,7 +202,7 @@ class EntrypointScriptBuilder(object):
         if self.cmd_ps is not None:
             helm_promote_cmd += self.cmd_ps
         if self.dry_run:
-            helm_promote_cmd = 'echo ' + helm_upgrade_cmd
+            helm_promote_cmd = 'echo ' + helm_promote_cmd
         lines.append(helm_promote_cmd)
 
         return lines
@@ -302,7 +295,7 @@ class EntrypointScriptBuilder(object):
 
     def build(self):
         lines = ['#!/bin/bash -e']
-        lines += self._build_export_commands()
+        lines += Helm2CommandBuilder().build_export_commands(self.google_application_credentials_json)
         lines += self._build_kubectl_commands()
         lines += self._build_helm_commands()
         return '\n'.join(lines)
