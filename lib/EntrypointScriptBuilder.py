@@ -296,9 +296,9 @@ class EntrypointScriptBuilder(object):
 
     def _select_helm_command_builder(self):
         if self.helm_version.startswith('3.'):
-            return Helm3CommandBuilder
+            return Helm3CommandBuilder()
         else:
-            return Helm2CommandBuilder
+            return Helm2CommandBuilder()
 
     def build(self):
         lines = ['#!/bin/bash -e']
