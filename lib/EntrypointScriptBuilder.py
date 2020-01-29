@@ -5,7 +5,7 @@ import sys
 import urllib.request
 import urllib.parse
 
-from lib.command_builder.Helm2CommandBuilder import Helm2CommandBuilder
+from command_builder.Helm2CommandBuilder import Helm2CommandBuilder
 
 
 class EntrypointScriptBuilder(object):

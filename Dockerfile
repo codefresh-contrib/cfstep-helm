@@ -28,7 +28,7 @@ COPY bin/ bin/
 COPY lib/ lib/
 COPY acceptance_tests/ acceptance_tests/
 RUN apt-get update \
-    && apt-get install -y python3-venv 
+    && apt-get install -y python3-venv
 
 FROM codefresh/kube-helm:${HELM_VERSION}
 ARG HELM_VERSION
