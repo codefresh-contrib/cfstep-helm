@@ -35,13 +35,13 @@ class EntrypointScriptBuilder(object):
 
             self.chart_ref = '/opt/chart'
             os.mkdir('/opt/chart')
-            sys.stderr.write('Chart files will be placed in /opt/chart\n');
+            sys.stderr.write('Chart files will be placed in /opt/chart\n')
             for item in self.chart:
                 if item['name'] == 'values':
                     item['name'] = 'values.yaml'
                 item['name'] = item['name'].replace('Charts/', 'charts/')
 
-                sys.stderr.write(item['name'] + '\n');
+                sys.stderr.write(item['name'] + '\n')
 
                 if not os.path.exists(os.path.dirname('/opt/chart/' + item['name'])):
                     try:
