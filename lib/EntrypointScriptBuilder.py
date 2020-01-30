@@ -130,6 +130,8 @@ class EntrypointScriptBuilder(object):
         if self.chart_repo_url is not None and not self.chart_repo_url.endswith('/'):
             self.chart_repo_url += '/'
 
+        self.helm_command_builder = self._select_helm_command_builder()
+
     def _get_azure_helm_token(self, repo_url):
         service = repo_url.replace('az://', '').strip('/')
         sys.stderr.write('Obtaining one-time token for Azure Helm repo service %s ...\n' % service)
@@ -173,7 +175,7 @@ class EntrypointScriptBuilder(object):
             lines.append(helm_repo_add_cmd)
 
         if self.action == 'install':
-            lines += self._build_helm_install_commands()
+            lines += self.helm_command_builder.build_helm_install_commands()
         if self.action == 'promotion':
             lines += self._build_helm_promotion_commands()
         elif self.action == 'push':
@@ -205,44 +207,6 @@ class EntrypointScriptBuilder(object):
         if self.dry_run:
             helm_promote_cmd = 'echo ' + helm_promote_cmd
         lines.append(helm_promote_cmd)
-
-        return lines
-
-    def _build_helm_install_commands(self):
-        lines = []
-
-        if self.release_name is None:
-            raise Exception('Must set RELEASE_NAME in the environment (desired Helm release name)')
-
-        # Only build dependencies if CHART_REPO_URL is not specified
-        if self.chart_repo_url is None:
-            helm_dep_build_cmd = 'helm dependency build %s' % self.chart_ref
-            if self.dry_run:
-                helm_dep_build_cmd = 'echo ' + helm_dep_build_cmd
-            lines.append(helm_dep_build_cmd)
-
-        helm_upgrade_cmd = 'helm upgrade %s %s --install --force --reset-values ' % (self.release_name, self.chart_ref)
-        if self.chart_repo_url is not None:
-            helm_upgrade_cmd += '--repo %s ' % self.chart_repo_url
-        if self.chart_version is not None:
-            helm_upgrade_cmd += '--version %s ' % self.chart_version
-        if self.tiller_namespace is not None:
-            helm_upgrade_cmd += '--tiller-namespace %s ' % self.tiller_namespace
-        if self.namespace is not None:
-            helm_upgrade_cmd += '--namespace %s ' % self.namespace
-        for custom_valuesfile in self.custom_valuesfiles:
-            helm_upgrade_cmd += '--values %s ' % custom_valuesfile
-        for cli_set_key, val in sorted(self.custom_values.items()):
-            helm_upgrade_cmd += '--set %s=%s ' % (cli_set_key, val)
-        for cli_set_key, val in sorted(self.string_values.items()):
-            helm_upgrade_cmd += '--set-string %s=%s ' % (cli_set_key, val)
-        if self.recreate_pods:
-            helm_upgrade_cmd += '--recreate-pods '
-        if self.cmd_ps is not None:
-            helm_upgrade_cmd += self.cmd_ps
-        if self.dry_run:
-            helm_upgrade_cmd = 'echo ' + helm_upgrade_cmd
-        lines.append(helm_upgrade_cmd)
 
         return lines
 
@@ -295,14 +259,30 @@ class EntrypointScriptBuilder(object):
         return lines
 
     def _select_helm_command_builder(self):
+        context = {
+            "google_application_credentials_json": self.google_application_credentials_json,
+            "release_name": self.release_name,
+            "chart_ref": self.chart_ref,
+            "chart_repo_url": self.chart_repo_url,
+            "chart_version": self.chart_version,
+            "namespace": self.namespace,
+            "custom_valuesfiles": self.custom_valuesfiles,
+            "custom_values": self.custom_values,
+            "string_values": self.string_values,
+            "recreate_pods": self.recreate_pods,
+            "cmd_ps": self.cmd_ps,
+            "dry_run": self.dry_run,
+            "tiller_namespace": self.tiller_namespace
+        }
+
         if self.helm_version.startswith('3.'):
-            return Helm3CommandBuilder()
+            return Helm3CommandBuilder(context)
         else:
-            return Helm2CommandBuilder()
+            return Helm2CommandBuilder(context)
 
     def build(self):
         lines = ['#!/bin/bash -e']
-        lines += self._select_helm_command_builder().build_export_commands(self.google_application_credentials_json)
+        lines += self.helm_command_builder.build_export_commands()
         lines += self._build_kubectl_commands()
         lines += self._build_helm_commands()
         return '\n'.join(lines)
