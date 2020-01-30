@@ -130,6 +130,8 @@ class EntrypointScriptBuilder(object):
         if self.chart_repo_url is not None and not self.chart_repo_url.endswith('/'):
             self.chart_repo_url += '/'
 
+        self.helm_command_builder = self._select_helm_command_builder()
+
     def _get_azure_helm_token(self, repo_url):
         service = repo_url.replace('az://', '').strip('/')
         sys.stderr.write('Obtaining one-time token for Azure Helm repo service %s ...\n' % service)
@@ -221,7 +223,8 @@ class EntrypointScriptBuilder(object):
                 helm_dep_build_cmd = 'echo ' + helm_dep_build_cmd
             lines.append(helm_dep_build_cmd)
 
-        helm_upgrade_cmd = 'helm upgrade %s %s --install --force --reset-values ' % (self.release_name, self.chart_ref)
+        helm_upgrade_cmd = self.helm_command_builder.build_helm_upgrade_command(self.release_name, self.chart_ref)
+
         if self.chart_repo_url is not None:
             helm_upgrade_cmd += '--repo %s ' % self.chart_repo_url
         if self.chart_version is not None:
@@ -294,15 +297,18 @@ class EntrypointScriptBuilder(object):
 
         return lines
 
+    def _helm_3(self):
+        return self.helm_version.startswith('3.')
+
     def _select_helm_command_builder(self):
-        if self.helm_version.startswith('3.'):
+        if self._helm_3():
             return Helm3CommandBuilder()
         else:
             return Helm2CommandBuilder()
 
     def build(self):
         lines = ['#!/bin/bash -e']
-        lines += self._select_helm_command_builder().build_export_commands(self.google_application_credentials_json)
+        lines += self.helm_command_builder.build_export_commands(self.google_application_credentials_json)
         lines += self._build_kubectl_commands()
         lines += self._build_helm_commands()
         return '\n'.join(lines)
