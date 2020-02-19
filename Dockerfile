@@ -33,8 +33,15 @@ RUN apt-get update \
     && make acceptance
 
 FROM codefresh/kube-helm:${HELM_VERSION}
+
+ENV XDG_CACHE_HOME=/root/.helm
+ENV XDG_DATA_HOME=/root/.helm
+ENV XDG_CONFIG_HOME=/root/.helm
+
 ARG HELM_VERSION
-COPY --from=setup /temp /root/.helm/* /root/.helm/
+COPY --from=setup /temp /root/.helm/
+COPY --from=setup /root/.helm/ /root/.helm/
+
 COPY bin/* /opt/bin/
 RUN chmod +x /opt/bin/*
 COPY lib/* /opt/lib/
