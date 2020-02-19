@@ -32,9 +32,11 @@ RUN apt-get update \
     && apt-get install -y python3-venv \
     && make acceptance
 
-#FROM codefresh/kube-helm:${HELM_VERSION}
-#ARG HELM_VERSION
-#COPY --from=setup /temp /root/.helm/* /root/.helm/
+FROM codefresh/kube-helm:${HELM_VERSION}
+ARG HELM_VERSION
+COPY --from=setup /temp /root/.helm/
+COPY --from=setup /root/.helm/ /root/.helm/
+
 COPY bin/* /opt/bin/
 RUN chmod +x /opt/bin/*
 COPY lib/* /opt/lib/
