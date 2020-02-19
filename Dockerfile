@@ -46,6 +46,8 @@ COPY bin/* /opt/bin/
 RUN chmod +x /opt/bin/*
 COPY lib/* /opt/lib/
 
+COPY /root/.config /root/.helm
+
 # Install Python3
 RUN apk add --no-cache python3 \
     && rm -rf /root/.cache
