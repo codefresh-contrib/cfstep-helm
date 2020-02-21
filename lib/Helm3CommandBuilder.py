@@ -9,3 +9,8 @@ class Helm3CommandBuilder(BaseCommandBuilder):
 
     def build_helm_upgrade_command(self, release_name, chart_ref):
         return 'helm upgrade %s %s --install --reset-values ' % (release_name, chart_ref)
+
+    def build_repo_commands(self):
+        lines = []
+        lines.append('helm repo add stable https://kubernetes-charts.storage.googleapis.com/')
+        return lines

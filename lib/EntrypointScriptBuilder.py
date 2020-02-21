@@ -310,5 +310,6 @@ class EntrypointScriptBuilder(object):
         lines = ['#!/bin/bash -e']
         lines += self.helm_command_builder.build_export_commands(self.google_application_credentials_json)
         lines += self._build_kubectl_commands()
+        lines += self.helm_command_builder.build_repo_commands()
         lines += self._build_helm_commands()
         return '\n'.join(lines)
