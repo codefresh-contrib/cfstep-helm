@@ -8,3 +8,6 @@ class Helm2CommandBuilder(BaseCommandBuilder):
 
     def build_helm_upgrade_command(self, release_name, chart_ref):
         return 'helm upgrade %s %s --install --force --reset-values ' % (release_name, chart_ref)
+
+    def build_repo_commands(self):
+        return []
