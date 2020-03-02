@@ -161,13 +161,12 @@ class EntrypointScriptBuilder(object):
     def _build_version_commands(self):
         lines = []
 
-        if self.action in ['install', 'promotion', 'push', 'auth']:
+        if self.action != 'auth':
             kubectl_version_cmd = 'kubectl version'
             if self.dry_run:
                 kubectl_version_cmd = 'echo ' + kubectl_version_cmd
             lines.append(kubectl_version_cmd)
 
-        if self.action in ['install', 'promotion', 'push']:
             helm_version_cmd = 'helm version'
             if self.dry_run:
                 helm_version_cmd = 'echo ' + helm_version_cmd
