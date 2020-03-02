@@ -12,5 +12,5 @@ class Helm3CommandBuilder(BaseCommandBuilder):
 
     def build_repo_commands(self):
         lines = []
-        lines.append('helm repo add cf-stable https://kubernetes-charts.storage.googleapis.com/ &&')
+        lines.append('helm repo add cf-stable https://kubernetes-charts.storage.googleapis.com/')
         return lines
