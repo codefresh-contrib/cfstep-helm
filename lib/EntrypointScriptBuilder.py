@@ -159,15 +159,8 @@ class EntrypointScriptBuilder(object):
         return lines
 
     def _build_version_commands(self):
-        lines = []
 
-        kubectl_version_cmd = 'kubectl version'
-        if self.dry_run:
-            kubectl_version_cmd = 'echo ' + kubectl_version_cmd
-        lines.append(kubectl_version_cmd)
-
-
-        return lines
+        return 'echo kubectl version'
 
     def _build_helm_commands(self):
         lines = []
