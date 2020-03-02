@@ -159,7 +159,15 @@ class EntrypointScriptBuilder(object):
         return lines
 
     def _build_version_commands(self):
-        return 'echo "text"'
+        lines = []
+        if self.action in ['install', 'promotion']:
+            if self.kube_context is None:
+                raise Exception('Must set KUBE_CONTEXT in environment (Name of Kubernetes cluster as named in Codefresh)')
+            kubectl_cmd = 'kubectl config use-context "%s"' % self.kube_context
+            if self.dry_run:
+                kubectl_cmd = 'echo ' + kubectl_cmd
+            lines.append(kubectl_cmd)
+        return lines
 
     def _build_helm_commands(self):
         lines = []
@@ -313,7 +321,7 @@ class EntrypointScriptBuilder(object):
         lines = ['#!/bin/bash -e']
         lines += self.helm_command_builder.build_export_commands(self.google_application_credentials_json)
         lines += self._build_kubectl_commands()
-        lines += self._build_version_commands()
+#         lines += self._build_version_commands()
         lines += self.helm_command_builder.build_repo_commands()
         lines += self._build_helm_commands()
         return '\n'.join(lines)
