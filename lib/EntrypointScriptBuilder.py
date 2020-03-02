@@ -159,7 +159,7 @@ class EntrypointScriptBuilder(object):
         return lines
 
     def _build_version_commands(self):
-        return 'echo text'
+        return ['echo text']
 
     def _build_helm_commands(self):
         lines = []
