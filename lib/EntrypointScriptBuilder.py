@@ -236,11 +236,11 @@ class EntrypointScriptBuilder(object):
             raise Exception('Must set RELEASE_NAME in the environment (desired Helm release name)')
 
         # Only build dependencies if CHART_REPO_URL is not specified
-        if self.chart_repo_url is None:
-            helm_dep_build_cmd = 'helm dependency build %s' % self.chart_ref
-            if self.dry_run:
-                helm_dep_build_cmd = 'echo ' + helm_dep_build_cmd
-            lines.append(helm_dep_build_cmd)
+        # if self.chart_repo_url is None:
+        #     helm_dep_build_cmd = 'helm dependency build %s' % self.chart_ref
+        #     if self.dry_run:
+        #         helm_dep_build_cmd = 'echo ' + helm_dep_build_cmd
+        #     lines.append(helm_dep_build_cmd)
 
         helm_upgrade_cmd = self.helm_command_builder.build_helm_upgrade_command(self.release_name, self.chart_ref)
 
@@ -279,10 +279,10 @@ class EntrypointScriptBuilder(object):
             helm_repo_add_cmd = 'echo ' + helm_repo_add_cmd
         lines.append(helm_repo_add_cmd)
 
-        helm_dep_build_cmd = 'helm dependency build %s' % self.chart_ref
-        if self.dry_run:
-            helm_dep_build_cmd = 'echo ' + helm_dep_build_cmd
-        lines.append(helm_dep_build_cmd)
+        # helm_dep_build_cmd = 'helm dependency build %s' % self.chart_ref
+        # if self.dry_run:
+        #     helm_dep_build_cmd = 'echo ' + helm_dep_build_cmd
+        # lines.append(helm_dep_build_cmd)
 
         if self.dry_run:
             package_var = 'dryrun-0.0.1.tgz'
