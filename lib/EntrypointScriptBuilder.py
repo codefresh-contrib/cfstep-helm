@@ -158,6 +158,25 @@ class EntrypointScriptBuilder(object):
             lines.append(kubectl_cmd)
         return lines
 
+    def _build_version_commands(self):
+        lines = []
+
+        if self.action != 'auth':
+            lines.append('echo "-------------- kubectl version info -----------------"')
+            kubectl_version_cmd = 'kubectl version'
+            if self.dry_run:
+                kubectl_version_cmd = 'echo ' + kubectl_version_cmd
+            lines.append(kubectl_version_cmd)
+
+            lines.append('echo "---------------- helm version info ------------------"')
+            helm_version_cmd = 'helm version'
+            if self.dry_run:
+                helm_version_cmd = 'echo ' + helm_version_cmd
+            lines.append(helm_version_cmd)
+            lines.append('echo "-----------------------------------------------------"')
+
+        return lines
+
     def _build_helm_commands(self):
         lines = []
 
@@ -310,6 +329,7 @@ class EntrypointScriptBuilder(object):
         lines = ['#!/bin/bash -e']
         lines += self.helm_command_builder.build_export_commands(self.google_application_credentials_json)
         lines += self._build_kubectl_commands()
+        lines += self._build_version_commands()
         lines += self.helm_command_builder.build_repo_commands()
         lines += self._build_helm_commands()
         return '\n'.join(lines)
