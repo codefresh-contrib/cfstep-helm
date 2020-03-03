@@ -162,19 +162,18 @@ class EntrypointScriptBuilder(object):
         lines = []
 
         if self.action != 'auth':
-            lines.append('')
-            lines.append('echo "--------------- version info -----------------"')
+            lines.append('echo "--------------- kubectl version info -----------------"')
             kubectl_version_cmd = 'kubectl version'
             if self.dry_run:
                 kubectl_version_cmd = 'echo ' + kubectl_version_cmd
             lines.append(kubectl_version_cmd)
 
+            lines.append('echo "--------------- helm version info -----------------"')
             helm_version_cmd = 'helm version'
             if self.dry_run:
                 helm_version_cmd = 'echo ' + helm_version_cmd
             lines.append(helm_version_cmd)
-            lines.append('echo "--------------- version info -----------------"')
-            lines.append('')
+            lines.append('echo "----------------------------------------------"')
 
         return lines
 
