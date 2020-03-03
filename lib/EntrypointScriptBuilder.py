@@ -326,10 +326,13 @@ class EntrypointScriptBuilder(object):
             return Helm2CommandBuilder()
 
     def build(self):
+        helm = []
+        helm.append(self.helm_command_builder.build_repo_commands())
+        helm.append(self._build_helm_commands())
+
         lines = ['#!/bin/bash -e']
         lines += self.helm_command_builder.build_export_commands(self.google_application_credentials_json)
         lines += self._build_kubectl_commands()
         lines += self._build_version_commands()
-        lines += self.helm_command_builder.build_repo_commands()
-        lines += self._build_helm_commands()
+        lines += ' && '.join(helm)
         return '\n'.join(lines)
