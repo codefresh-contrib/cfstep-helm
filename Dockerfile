@@ -45,6 +45,7 @@ COPY --from=setup /root/.helm/ /root/.helm/
 COPY bin/* /opt/bin/
 RUN chmod +x /opt/bin/*
 COPY lib/* /opt/lib/
+COPY build_entrypoint_script /opt/build_entrypoint_script
 
 # Install Python3
 RUN apk add --no-cache python3 \

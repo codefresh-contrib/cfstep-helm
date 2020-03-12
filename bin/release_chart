@@ -19,7 +19,7 @@ mask_cmd() {
 
 CFSTEP_HELM_ROOTDIR="${CFSTEP_HELM_ROOTDIR:-/opt}"
 
-PYTHONPATH="${CFSTEP_HELM_ROOTDIR}/lib" "${CFSTEP_HELM_ROOTDIR}/build_entrypoint_script" > /tmp/run
+PYTHONPATH="${CFSTEP_HELM_ROOTDIR}/lib" "${CFSTEP_HELM_ROOTDIR}/bin/build_entrypoint_script" > /tmp/run
 
 echo ""
 echo "Running the following script:"
