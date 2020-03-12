@@ -30,6 +30,7 @@ class EntrypointScriptBuilder(object):
         # self.chart = env.get('CHART_JSON')
         self.helm_version = env.get('HELM_VERSION')
         self.azure_helm_token = None
+        print(self.chart)
 
         # Save chart data in files
         if not self.chart is None:
