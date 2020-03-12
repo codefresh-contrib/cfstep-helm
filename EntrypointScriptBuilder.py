@@ -1,10 +1,11 @@
+import base64
+import errno
 import json
 import os
-import errno
 import sys
-import urllib.request
 import urllib.parse
-import base64, zlib
+import urllib.request
+import zlib
 
 from Helm2CommandBuilder import Helm2CommandBuilder
 from Helm3CommandBuilder import Helm3CommandBuilder
@@ -26,17 +27,19 @@ class EntrypointScriptBuilder(object):
         self.recreate_pods = env.get('RECREATE_PODS')
         self.cmd_ps = env.get('CMD_PS')
         self.google_application_credentials_json = env.get('GOOGLE_APPLICATION_CREDENTIALS_JSON')
-        self.chart = str(zlib.decompress(base64.b64decode(env.get('CHART_JSON')), 15 + 32))
-        # self.chart = env.get('CHART_JSON')
+        self.chart = self._resolve_chart(env)
         self.helm_version = env.get('HELM_VERSION')
         self.azure_helm_token = None
 
         # Save chart data in files
-        if not self.chart is None:
+        if self.chart is not None:
             self.chart = json.loads(self.chart)
 
-            self.chart_ref = '/opt/chart'
-            os.mkdir('/opt/chart')
+            chart_dir = '/opt/chart'
+            self.chart_ref = chart_dir
+            if not os.path.exists(chart_dir):
+                os.mkdir(chart_dir)
+
             sys.stderr.write('Chart files will be placed in /opt/chart\n')
             for item in self.chart:
                 if item['name'] == 'values':
@@ -100,7 +103,9 @@ class EntrypointScriptBuilder(object):
         if chart_repo_url and chart_repo_url.startswith('az://'):
             if not self.azure_helm_token:
                 self.azure_helm_token = self._get_azure_helm_token(chart_repo_url)
-            chart_repo_url = chart_repo_url.strip('/').replace('az://', 'https://00000000-0000-0000-0000-000000000000:%s@' % self.azure_helm_token, 1) + '/helm/v1/repo'
+            chart_repo_url = chart_repo_url.strip('/').replace('az://',
+                                                               'https://00000000-0000-0000-0000-000000000000:%s@' % self.azure_helm_token,
+                                                               1) + '/helm/v1/repo'
 
         helm_repo_username = env.get('HELMREPO_USERNAME')
         helm_repo_password = env.get('HELMREPO_PASSWORD')
@@ -119,7 +124,9 @@ class EntrypointScriptBuilder(object):
                 elif repo_url.startswith('az://'):
                     if not self.azure_helm_token:
                         self.azure_helm_token = self._get_azure_helm_token(repo_url)
-                    repo_url = repo_url.replace('az://', 'https://00000000-0000-0000-0000-000000000000:%s@' % self.azure_helm_token, 1) + 'helm/v1/repo'
+                    repo_url = repo_url.replace('az://',
+                                                'https://00000000-0000-0000-0000-000000000000:%s@' % self.azure_helm_token,
+                                                1) + 'helm/v1/repo'
 
                 helm_repos[repo_name] = repo_url
                 if self.chart_repo_url is None:
@@ -143,7 +150,8 @@ class EntrypointScriptBuilder(object):
         if 'local' in cf_build_url:
             cf_build_url = 'http://' + os.getenv('CF_HOST_IP')
         cf_build_url_parsed = urllib.parse.urlparse(cf_build_url)
-        token_url = '%s://%s/api/clusters/aks/helm/repos/%s/token' % (cf_build_url_parsed.scheme, cf_build_url_parsed.netloc, service)
+        token_url = '%s://%s/api/clusters/aks/helm/repos/%s/token' % (
+        cf_build_url_parsed.scheme, cf_build_url_parsed.netloc, service)
         request = urllib.request.Request(token_url)
         request.add_header('Authorization', os.getenv('CF_API_KEY'))
         data = json.load(urllib.request.urlopen(request))
@@ -153,12 +161,20 @@ class EntrypointScriptBuilder(object):
         lines = []
         if self.action in ['install', 'promotion', 'auth']:
             if self.kube_context is None:
-                raise Exception('Must set KUBE_CONTEXT in environment (Name of Kubernetes cluster as named in Codefresh)')
+                raise Exception(
+                    'Must set KUBE_CONTEXT in environment (Name of Kubernetes cluster as named in Codefresh)')
             kubectl_cmd = 'kubectl config use-context "%s"' % self.kube_context
             if self.dry_run:
                 kubectl_cmd = 'echo ' + kubectl_cmd
             lines.append(kubectl_cmd)
         return lines
+
+    @staticmethod
+    def _resolve_chart(env):
+        if not env.get('CHART_JSON_GZIP') is None:
+            return zlib.decompress(base64.b64decode(env.get('CHART_JSON_GZIP')), 15 + 32)
+
+        return None
 
     def _build_helm_commands(self):
         lines = []
@@ -167,7 +183,8 @@ class EntrypointScriptBuilder(object):
             return lines
 
         if self.chart_ref is None:
-            raise Exception('Must set CHART_REF in the environment (this should be a reference to the chart as Helm CLI expects)')
+            raise Exception(
+                'Must set CHART_REF in the environment (this should be a reference to the chart as Helm CLI expects)')
 
         # Add Helm repos locally
         for repo_name, repo_url in sorted(self.helm_repos.items()):
@@ -186,12 +203,12 @@ class EntrypointScriptBuilder(object):
         return lines
 
     def _build_helm_promotion_commands(self):
-        lines = []
+        lines = ['cd /opt/chart && helm dep update']
 
         if self.release_name is None:
             raise Exception('Must set RELEASE_NAME in the environment (desired Helm release name)')
 
-        helm_promote_cmd = 'helm dep update && helm upgrade %s %s --install ' % (self.release_name, self.chart_ref)
+        helm_promote_cmd = 'helm upgrade %s %s --install ' % (self.release_name, self.chart_ref)
         if self.tiller_namespace is not None:
             helm_promote_cmd += '--tiller-namespace %s ' % self.tiller_namespace
         if self.namespace is not None:
@@ -255,7 +272,8 @@ class EntrypointScriptBuilder(object):
         lines = []
 
         if self.chart_repo_url is None:
-            raise Exception('Must set CHART_REPO_URL in the environment, otherwise attach a Helm Repo context (prefixed with CF_CTX_)')
+            raise Exception(
+                'Must set CHART_REPO_URL in the environment, otherwise attach a Helm Repo context (prefixed with CF_CTX_)')
 
         helm_repo_add_cmd = 'helm repo add remote %s' % self.chart_repo_url
         if self.dry_run:
