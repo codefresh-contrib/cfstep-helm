@@ -4,6 +4,7 @@ import errno
 import sys
 import urllib.request
 import urllib.parse
+import base64, zlib
 
 from Helm2CommandBuilder import Helm2CommandBuilder
 from Helm3CommandBuilder import Helm3CommandBuilder
@@ -25,7 +26,7 @@ class EntrypointScriptBuilder(object):
         self.recreate_pods = env.get('RECREATE_PODS')
         self.cmd_ps = env.get('CMD_PS')
         self.google_application_credentials_json = env.get('GOOGLE_APPLICATION_CREDENTIALS_JSON')
-        self.chart = env.get('CHART_JSON')
+        self.chart = decoded_data = zlib.decompress(base64.b64decode(env.get('CHART_JSON')))
         self.helm_version = env.get('HELM_VERSION')
         self.azure_helm_token = None
 
