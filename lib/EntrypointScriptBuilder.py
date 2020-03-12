@@ -10,6 +10,8 @@ import zlib
 from lib.Helm2CommandBuilder import Helm2CommandBuilder
 from lib.Helm3CommandBuilder import Helm3CommandBuilder
 
+CHART_DIR = '/opt/chart'
+
 
 class EntrypointScriptBuilder(object):
 
@@ -35,12 +37,11 @@ class EntrypointScriptBuilder(object):
         if self.chart is not None:
             self.chart = json.loads(self.chart)
 
-            chart_dir = '/opt/chart'
-            self.chart_ref = chart_dir
-            if not os.path.exists(chart_dir):
-                os.mkdir(chart_dir)
+            self.chart_ref = CHART_DIR
+            if not os.path.exists(CHART_DIR):
+                os.mkdir(CHART_DIR)
 
-            sys.stderr.write('Chart files will be placed in /opt/chart\n')
+            sys.stderr.write('Chart files will be placed in {}\n'.format(CHART_DIR))
             for item in self.chart:
                 if item['name'] == 'values':
                     item['name'] = 'values.yaml'
@@ -48,14 +49,14 @@ class EntrypointScriptBuilder(object):
 
                 sys.stderr.write(item['name'] + '\n')
 
-                if not os.path.exists(os.path.dirname('/opt/chart/' + item['name'])):
+                if not os.path.exists(os.path.dirname(CHART_DIR + item['name'])):
                     try:
-                        os.makedirs(os.path.dirname('/opt/chart/' + item['name']))
+                        os.makedirs(os.path.dirname(CHART_DIR + item['name']))
                     except OSError as exc:
                         if exc.errno != errno.EEXIST:
                             raise
 
-                file = open('/opt/chart/' + item['name'], 'w')
+                file = open('CHART_DIR' + item['name'], 'w')
                 data = item['data'] if 'data' in item.keys() else ''
                 file.write(data)
                 file.close()
@@ -151,7 +152,7 @@ class EntrypointScriptBuilder(object):
             cf_build_url = 'http://' + os.getenv('CF_HOST_IP')
         cf_build_url_parsed = urllib.parse.urlparse(cf_build_url)
         token_url = '%s://%s/api/clusters/aks/helm/repos/%s/token' % (
-        cf_build_url_parsed.scheme, cf_build_url_parsed.netloc, service)
+            cf_build_url_parsed.scheme, cf_build_url_parsed.netloc, service)
         request = urllib.request.Request(token_url)
         request.add_header('Authorization', os.getenv('CF_API_KEY'))
         data = json.load(urllib.request.urlopen(request))
@@ -203,7 +204,7 @@ class EntrypointScriptBuilder(object):
         return lines
 
     def _build_helm_promotion_commands(self):
-        lines = ['cd /opt/chart && helm dep update']
+        lines = ['cd {} && helm dep update'.format(CHART_DIR)]
 
         if self.release_name is None:
             raise Exception('Must set RELEASE_NAME in the environment (desired Helm release name)')
