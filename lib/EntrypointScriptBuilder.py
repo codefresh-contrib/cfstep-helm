@@ -7,8 +7,8 @@ import urllib.parse
 import urllib.request
 import zlib
 
-from Helm2CommandBuilder import Helm2CommandBuilder
-from Helm3CommandBuilder import Helm3CommandBuilder
+from lib.Helm2CommandBuilder import Helm2CommandBuilder
+from lib.Helm3CommandBuilder import Helm3CommandBuilder
 
 
 class EntrypointScriptBuilder(object):

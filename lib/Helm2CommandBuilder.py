@@ -1,4 +1,4 @@
-from BaseCommandBuilder import BaseCommandBuilder
+from lib.BaseCommandBuilder import BaseCommandBuilder
 
 
 class Helm2CommandBuilder(BaseCommandBuilder):
