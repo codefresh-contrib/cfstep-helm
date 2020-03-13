@@ -307,6 +307,8 @@ class EntrypointScriptBuilder(object):
                 for h in headers:
                     if "X-Artifactory-Id" in h:
                         return True
+                    if "Server" in h and "Artifactory" in h[1]:
+                        return True
         except:
             None
         return False
