@@ -56,7 +56,7 @@ class EntrypointScriptBuilder(object):
                         if exc.errno != errno.EEXIST:
                             raise
 
-                file = open('CHART_DIR' + item['name'], 'w')
+                file = open(CHART_DIR + item['name'], 'w')
                 data = item['data'] if 'data' in item.keys() else ''
                 file.write(data)
                 file.close()
