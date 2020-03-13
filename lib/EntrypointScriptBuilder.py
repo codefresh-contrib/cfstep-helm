@@ -49,14 +49,14 @@ class EntrypointScriptBuilder(object):
 
                 sys.stderr.write(item['name'] + '\n')
 
-                if not os.path.exists(os.path.dirname(CHART_DIR + item['name'])):
+                if not os.path.exists(os.path.dirname('{}/{}'.format(CHART_DIR, item['name']))):
                     try:
-                        os.makedirs(os.path.dirname(CHART_DIR + item['name']))
+                        os.makedirs(os.path.dirname('{}/{}'.format(CHART_DIR, item['name'])))
                     except OSError as exc:
                         if exc.errno != errno.EEXIST:
                             raise
 
-                file = open(CHART_DIR + item['name'], 'w')
+                file = open('{}/{}'.format(CHART_DIR, item['name']), 'w')
                 data = item['data'] if 'data' in item.keys() else ''
                 file.write(data)
                 file.close()
