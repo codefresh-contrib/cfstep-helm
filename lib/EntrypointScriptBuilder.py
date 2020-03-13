@@ -172,7 +172,10 @@ class EntrypointScriptBuilder(object):
 
     @staticmethod
     def _resolve_chart(env):
-        if not env.get('CHART_JSON_GZIP') is None:
+        if env.get('CHART_JSON') is not None:
+            return env.get('CHART_JSON')
+
+        if env.get('CHART_JSON_GZIP') is not None:
             return zlib.decompress(base64.b64decode(env.get('CHART_JSON_GZIP')), 15 + 32)
 
         return None
