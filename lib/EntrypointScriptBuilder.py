@@ -284,11 +284,10 @@ class EntrypointScriptBuilder(object):
             helm_repo_add_cmd = 'echo ' + helm_repo_add_cmd
         lines.append(helm_repo_add_cmd)
 
-        if not self._helm_3():
-            helm_dep_build_cmd = 'helm dependency build %s' % self.chart_ref
-            if self.dry_run:
-                helm_dep_build_cmd = 'echo ' + helm_dep_build_cmd
-            lines.append(helm_dep_build_cmd)
+        helm_dep_build_cmd = 'helm dependency update %s' % self.chart_ref
+        if not self._helm_3() and self.dry_run:
+            helm_dep_build_cmd = 'echo ' + helm_dep_build_cmd
+        lines.append(helm_dep_build_cmd)
 
         if self.dry_run:
             package_var = 'dryrun-0.0.1.tgz'
