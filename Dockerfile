@@ -27,6 +27,7 @@ RUN curl -L "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz" -o he
 COPY Makefile Makefile
 COPY bin/ bin/
 COPY lib/ lib/
+COPY build_entrypoint_script build_entrypoint_script
 COPY acceptance_tests/ acceptance_tests/
 RUN apt-get update \
     && apt-get install -y python3-venv \
@@ -45,6 +46,7 @@ COPY --from=setup /root/.helm/ /root/.helm/
 COPY bin/* /opt/bin/
 RUN chmod +x /opt/bin/*
 COPY lib/* /opt/lib/
+COPY build_entrypoint_script /opt/build_entrypoint_script
 
 # Install Python3
 RUN apk add --no-cache python3 \
