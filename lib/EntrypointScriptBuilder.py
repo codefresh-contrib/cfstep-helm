@@ -279,6 +279,8 @@ class EntrypointScriptBuilder(object):
 
         if self.azure_helm_token is not None:
             helm_push_command = 'curl --fail -X PUT --data-binary "@${PACKAGE}" ' + self.chart_repo_url + '_blobs/$(basename $PACKAGE)' + ' || curl --fail -X PATCH --data-binary "@${PACKAGE}" ' + self.chart_repo_url + '_blobs/$(basename $PACKAGE)'
+        elif self.isArtifactoryRepo(self.chart_repo_url):
+            helm_push_command = 'curl -u $HELMREPO_USERNAME:$HELMREPO_PASSWORD -T $PACKAGE ' + self.chart_repo_url + '$(basename $PACKAGE)'
         elif self.chart_repo_url.startswith('cm://'):
             helm_push_command = 'helm push $PACKAGE remote'
         elif self.chart_repo_url.startswith('s3://'):
@@ -297,6 +299,19 @@ class EntrypointScriptBuilder(object):
         lines.append(helm_push_command)
 
         return lines
+
+    def isArtifactoryRepo(self, repoUrl):
+        try:
+            with urllib.request.urlopen(repoUrl) as response:
+                headers = response.info()._headers
+                for h in headers:
+                    if "X-Artifactory-Id" in h:
+                        return True
+                    if "Server" in h and "Artifactory" in h[1]:
+                        return True
+        except:
+            None
+        return False
 
     def _helm_3(self):
         return self.helm_version.startswith('3.')
