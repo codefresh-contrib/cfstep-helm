@@ -248,19 +248,18 @@ class EntrypointScriptBuilder(object):
                 helm_dep_build_cmd = 'echo ' + helm_dep_build_cmd
             lines.append(helm_dep_build_cmd)
 
+        chart_path = "{}/{}".format(DOWNLOAD_CHART_DIR, self.chart_ref.split("/")[-1])
         helm_pull_cmd = 'helm pull {} --untar --untardir {} '.format(self.chart_ref, DOWNLOAD_CHART_DIR)
 
         if self.chart_repo_url is not None:
             helm_pull_cmd += '--repo %s ' % self.chart_repo_url
 
-        chart_path = "{}/{}".format(DOWNLOAD_CHART_DIR, self.chart_ref.split("/")[-1])
-
-        if self.commit_message is not None:
-            lines.append('echo {} > {}/templates/NOTES.txt'.format(self.commit_message, chart_path))
-
         if self.chart_version is not None:
             helm_pull_cmd += '--version %s ' % self.chart_version
         lines.append(helm_pull_cmd)
+
+        if self.commit_message is not None:
+            lines.append('echo {} > {}/templates/NOTES.txt'.format(self.commit_message, chart_path))
 
         helm_upgrade_cmd = self.helm_command_builder.build_helm_upgrade_command(self.release_name, chart_path)
 
