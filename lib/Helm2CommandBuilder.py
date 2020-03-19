@@ -13,4 +13,4 @@ class Helm2CommandBuilder(BaseCommandBuilder):
         return []
 
     def build_pull_command(self):
-        return 'helm pull'
+        return 'helm fetch'
