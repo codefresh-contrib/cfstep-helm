@@ -11,6 +11,7 @@ from lib.Helm2CommandBuilder import Helm2CommandBuilder
 from lib.Helm3CommandBuilder import Helm3CommandBuilder
 
 CHART_DIR = '/opt/chart'
+DOWNLOAD_CHART_DIR = '/opt/chart_install_data'
 
 
 class EntrypointScriptBuilder(object):
@@ -246,12 +247,17 @@ class EntrypointScriptBuilder(object):
                 helm_dep_build_cmd = 'echo ' + helm_dep_build_cmd
             lines.append(helm_dep_build_cmd)
 
-        helm_upgrade_cmd = self.helm_command_builder.build_helm_upgrade_command(self.release_name, self.chart_ref)
+        helm_pull_cmd = 'helm pull {} --untar --untardir {} '.format(self.chart_ref, DOWNLOAD_CHART_DIR)
 
         if self.chart_repo_url is not None:
-            helm_upgrade_cmd += '--repo %s ' % self.chart_repo_url
+            helm_pull_cmd += '--repo %s ' % self.chart_repo_url
+
         if self.chart_version is not None:
-            helm_upgrade_cmd += '--version %s ' % self.chart_version
+            helm_pull_cmd += '--version %s ' % self.chart_version
+        lines.append(helm_pull_cmd)
+
+        helm_upgrade_cmd = self.helm_command_builder.build_helm_upgrade_command(self.release_name, DOWNLOAD_CHART_DIR)
+
         if self.tiller_namespace is not None:
             helm_upgrade_cmd += '--tiller-namespace %s ' % self.tiller_namespace
         if self.namespace is not None:
