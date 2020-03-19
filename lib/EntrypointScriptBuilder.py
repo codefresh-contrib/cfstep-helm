@@ -249,7 +249,7 @@ class EntrypointScriptBuilder(object):
             lines.append(helm_dep_build_cmd)
 
         chart_path = "{}/{}".format(DOWNLOAD_CHART_DIR, self.chart_ref.split("/")[-1])
-        helm_pull_cmd = 'helm pull {} --untar --untardir {} '.format(self.chart_ref, DOWNLOAD_CHART_DIR)
+        helm_pull_cmd = self.helm_command_builder.build_pull_command() + ' {} --untar --untardir {} '.format(self.chart_ref, DOWNLOAD_CHART_DIR)
 
         if self.chart_repo_url is not None:
             helm_pull_cmd += '--repo %s ' % self.chart_repo_url
