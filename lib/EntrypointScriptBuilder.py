@@ -29,6 +29,7 @@ class EntrypointScriptBuilder(object):
         self.dry_run = env.get('DRY_RUN')
         self.recreate_pods = env.get('RECREATE_PODS')
         self.cmd_ps = env.get('CMD_PS')
+        self.commit_message = env.get('COMMIT_MESSAGE')
         self.google_application_credentials_json = env.get('GOOGLE_APPLICATION_CREDENTIALS_JSON')
         self.chart = self._resolve_chart(env)
         self.helm_version = env.get('HELM_VERSION')
@@ -252,10 +253,14 @@ class EntrypointScriptBuilder(object):
         if self.chart_repo_url is not None:
             helm_pull_cmd += '--repo %s ' % self.chart_repo_url
 
+        chart_path = "{}/{}".format(DOWNLOAD_CHART_DIR, self.chart_ref.split("/")[-1])
+
+        if self.commit_message is not None:
+            lines.append('echo {} > {}/templates/NOTES.txt'.format(self.commit_message, chart_path))
+
         if self.chart_version is not None:
             helm_pull_cmd += '--version %s ' % self.chart_version
         lines.append(helm_pull_cmd)
-        chart_path = "{}/{}".format(DOWNLOAD_CHART_DIR, self.chart_ref.split("/")[-1])
 
         helm_upgrade_cmd = self.helm_command_builder.build_helm_upgrade_command(self.release_name, chart_path)
 
