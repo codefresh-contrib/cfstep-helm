@@ -249,6 +249,8 @@ class EntrypointScriptBuilder(object):
 
         helm_upgrade_cmd = self.helm_command_builder.build_helm_upgrade_command(self.release_name, self.chart_ref)
 
+        lines.append('helm upgrade --help')
+
         if self.commit_message is not None:
             helm_upgrade_cmd += '--description "%s" ' % self.commit_message
         if self.chart_repo_url is not None:
