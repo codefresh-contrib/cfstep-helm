@@ -250,14 +250,15 @@ class EntrypointScriptBuilder(object):
             lines.append(helm_dep_build_cmd)
 
         chart_path = "{}/{}".format(DOWNLOAD_CHART_DIR, self.chart_ref.split("/")[-1])
-        helm_pull_cmd = self.helm_command_builder.build_pull_command() + ' {} --untar --untardir {} '.format(self.chart_ref, DOWNLOAD_CHART_DIR)
+        pull_args = ' {} --untar --untardir {} '.format(self.chart_ref, DOWNLOAD_CHART_DIR)
+        helm_pull_cmd = self.helm_command_builder.build_pull_command() + pull_args
 
-#        if self.chart_repo_url is not None:
-#            helm_pull_cmd += '--repo %s ' % self.chart_repo_url
-#
-#        if self.chart_version is not None:
-#            helm_pull_cmd += '--version %s ' % self.chart_version
-#        lines.append(helm_pull_cmd)
+        if self.chart_repo_url is not None:
+            helm_pull_cmd += '--repo %s ' % self.chart_repo_url
+
+        if self.chart_version is not None:
+            helm_pull_cmd += '--version %s ' % self.chart_version
+        lines.append(helm_pull_cmd)
 #
 #        if self.commit_message is not None:
 #            lines.extend(CommitMessageResolver.get_command(chart_path + '/templates/NOTES.txt', self.commit_message))
