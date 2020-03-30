@@ -258,6 +258,7 @@ class EntrypointScriptBuilder(object):
 
         if self.chart_version is not None:
             helm_pull_cmd += '--version %s ' % self.chart_version
+        print(helm_pull_cmd)
 #        lines.append(helm_pull_cmd)
 #
 #        if self.commit_message is not None:
