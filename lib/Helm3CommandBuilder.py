@@ -14,3 +14,6 @@ class Helm3CommandBuilder(BaseCommandBuilder):
         lines = []
         lines.append('helm repo add cf-stable https://kubernetes-charts.storage.googleapis.com/')
         return lines
+
+    def build_pull_command(self):
+        return 'helm pull'

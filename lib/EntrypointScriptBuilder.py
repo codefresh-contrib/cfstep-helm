@@ -7,10 +7,12 @@ import urllib.parse
 import urllib.request
 import zlib
 
+from lib.CommitMessageResolver import CommitMessageResolver
 from lib.Helm2CommandBuilder import Helm2CommandBuilder
 from lib.Helm3CommandBuilder import Helm3CommandBuilder
 
 CHART_DIR = '/opt/chart'
+DOWNLOAD_CHART_DIR = '/opt/chart_install_data'
 
 
 class EntrypointScriptBuilder(object):
@@ -28,6 +30,7 @@ class EntrypointScriptBuilder(object):
         self.dry_run = env.get('DRY_RUN')
         self.recreate_pods = env.get('RECREATE_PODS')
         self.cmd_ps = env.get('CMD_PS')
+        self.commit_message = env.get('COMMIT_MESSAGE')
         self.google_application_credentials_json = env.get('GOOGLE_APPLICATION_CREDENTIALS_JSON')
         self.chart = self._resolve_chart(env)
         self.helm_version = env.get('HELM_VERSION')
@@ -246,12 +249,25 @@ class EntrypointScriptBuilder(object):
                 helm_dep_build_cmd = 'echo ' + helm_dep_build_cmd
             lines.append(helm_dep_build_cmd)
 
-        helm_upgrade_cmd = self.helm_command_builder.build_helm_upgrade_command(self.release_name, self.chart_ref)
+        chart_path = "{}/{}".format(DOWNLOAD_CHART_DIR, self.chart_ref.split("/")[-1])
+        pull_args = ' {} --untar --untardir {} '.format(self.chart_ref, DOWNLOAD_CHART_DIR)
+        helm_pull_cmd = self.helm_command_builder.build_pull_command() + pull_args
 
         if self.chart_repo_url is not None:
-            helm_upgrade_cmd += '--repo %s ' % self.chart_repo_url
+            helm_pull_cmd += '--repo %s ' % self.chart_repo_url
+
         if self.chart_version is not None:
-            helm_upgrade_cmd += '--version %s ' % self.chart_version
+            helm_pull_cmd += '--version %s ' % self.chart_version
+
+        if self.dry_run:
+            helm_pull_cmd = 'echo ' + helm_pull_cmd
+        lines.append(helm_pull_cmd)
+
+        if self.commit_message is not None:
+            lines.extend(CommitMessageResolver.get_command(chart_path + '/templates/NOTES.txt', self.commit_message))
+
+        helm_upgrade_cmd = self.helm_command_builder.build_helm_upgrade_command(self.release_name, chart_path)
+
         if self.tiller_namespace is not None:
             helm_upgrade_cmd += '--tiller-namespace %s ' % self.tiller_namespace
         if self.namespace is not None:
