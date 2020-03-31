@@ -263,9 +263,8 @@ class EntrypointScriptBuilder(object):
                 helm_pull_cmd = 'echo ' + helm_pull_cmd
             lines.append(helm_pull_cmd)
 
-
-        if self.commit_message is not None:
-            lines.extend(CommitMessageResolver.get_command(chart_path + '/templates/NOTES.txt', self.commit_message))
+            if self.commit_message is not None:
+                lines.extend(CommitMessageResolver.get_command(chart_path + '/templates/NOTES.txt', self.commit_message))
 
         helm_upgrade_cmd = self.helm_command_builder.build_helm_upgrade_command(self.release_name, chart_path)
 
