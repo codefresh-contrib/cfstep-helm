@@ -17,7 +17,7 @@ mask_cmd() {
     (set -o pipefail && $@ | sed 's/:[^\/][^@]*@/:\*\*\*\*\*@/g')
 }
 
-CFSTEP_HELM_ROOTDIR="${CFSTEP_HELM_ROOTDIR:-/opt}"
+CFSTEP_HELM_ROOTDIR="${CFSTEP_HELM_ROOTDIR:-.}"
 
 PYTHONPATH="${CFSTEP_HELM_ROOTDIR}/lib" "${CFSTEP_HELM_ROOTDIR}/build_entrypoint_script" > /tmp/run
 
