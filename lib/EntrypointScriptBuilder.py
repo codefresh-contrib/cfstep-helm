@@ -268,6 +268,12 @@ class EntrypointScriptBuilder(object):
 
         helm_upgrade_cmd = self.helm_command_builder.build_helm_upgrade_command(self.release_name, chart_path)
 
+        if not self.helm_command_builder.need_pull(self.chart_ref, self.chart_repo_url, self.chart_version):
+            if self.chart_repo_url is not None:
+                helm_upgrade_cmd += '--repo %s ' % self.chart_repo_url
+            if self.chart_version is not None:
+                helm_upgrade_cmd += '--version %s ' % self.chart_version
+
         if self.tiller_namespace is not None:
             helm_upgrade_cmd += '--tiller-namespace %s ' % self.tiller_namespace
         if self.namespace is not None:
