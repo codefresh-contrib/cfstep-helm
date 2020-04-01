@@ -14,7 +14,9 @@ class BaseCommandBuilder:
         return lines
 
     @staticmethod
-    def need_pull(ref, repo, version):
+    def need_pull(ref, name, repo, version):
+        if name:
+            return True
         if repo is not None or version is not None:
             return False
 
