@@ -20,6 +20,7 @@ class EntrypointScriptBuilder(object):
     def __init__(self, env):
         self.action = env.get('ACTION', 'install').lower()
         self.kube_context = env.get('KUBE_CONTEXT')
+        self.chart_name = env.get('CHART_NAME')
         self.chart_ref = env.get('CHART_REF', env.get('CHART_NAME'))
         self.chart_repo_url = env.get('CHART_REPO_URL')
         self.chart_version = env.get('CHART_VERSION')
@@ -251,7 +252,7 @@ class EntrypointScriptBuilder(object):
 
         chart_path = self.chart_ref
 
-        if self.commit_message is not None and self.helm_command_builder.need_pull(self.chart_ref, self.chart.name, self.chart_repo_url, self.chart_version):
+        if self.commit_message is not None and self.helm_command_builder.need_pull(self.chart_ref, self.chart_name, self.chart_repo_url, self.chart_version):
             chart_path = "{}/{}".format(DOWNLOAD_CHART_DIR, self.chart_ref.split("/")[-1])
             pull_args = ' {} --untar --untardir {} '.format(self.chart_ref, DOWNLOAD_CHART_DIR)
             helm_pull_cmd = self.helm_command_builder.build_pull_command() + pull_args
@@ -268,7 +269,7 @@ class EntrypointScriptBuilder(object):
 
         helm_upgrade_cmd = self.helm_command_builder.build_helm_upgrade_command(self.release_name, chart_path)
 
-        if not self.helm_command_builder.need_pull(self.chart_ref, self.chart.name, self.chart_repo_url, self.chart_version) or self.commit_message is None:
+        if not self.helm_command_builder.need_pull(self.chart_ref, self.chart_name, self.chart_repo_url, self.chart_version) or self.commit_message is None:
             if self.chart_repo_url is not None:
                 helm_upgrade_cmd += '--repo %s ' % self.chart_repo_url
             if self.chart_version is not None:
