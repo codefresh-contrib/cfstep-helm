@@ -201,6 +201,8 @@ class EntrypointScriptBuilder(object):
                 helm_repo_add_cmd = 'echo ' + helm_repo_add_cmd
             lines.append(helm_repo_add_cmd)
 
+        lines.append('helm repo update')
+
         if self.action == 'install':
             lines += self._build_helm_install_commands()
         if self.action == 'promotion':
