@@ -137,7 +137,7 @@ class EntrypointScriptBuilder(object):
                 if self.chart_repo_url is None:
                     chart_repo_url = repo_url
 
-        self.chart_repo_url = chart_repo_url
+        # self.chart_repo_url = chart_repo_url
         self.helm_repos = helm_repos
 
         # Workaround a bug in Helm where url that doesn't end with / breaks --repo flags
