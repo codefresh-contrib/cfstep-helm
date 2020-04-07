@@ -197,6 +197,7 @@ class EntrypointScriptBuilder(object):
         # Add Helm repos locally
         for repo_name, repo_url in sorted(self.helm_repos.items()):
             url, username, password = self._parse_repo_url(repo_url)
+
             helm_repo_add_cmd = 'helm repo add %s %s' % (repo_name, url)
             if username is not None:
                 helm_repo_add_cmd += ' --username %s' % username
@@ -371,8 +372,9 @@ class EntrypointScriptBuilder(object):
 
     def _parse_repo_url(self, url):
         parsed = urllib.parse.urlparse(url)
-        print(parsed)
         result_link = '%s://%s%s' % (parsed.scheme, parsed.hostname, parsed.path)
+        if parsed.scheme == 'az':
+            return url, None, None
         if parsed.query is not None:
             result_link += '?%s' % parsed.query
         return result_link, parsed.username, parsed.password
