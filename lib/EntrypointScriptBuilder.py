@@ -200,9 +200,9 @@ class EntrypointScriptBuilder(object):
 
             helm_repo_add_cmd = 'helm repo add %s %s' % (repo_name, url)
             if username is not None:
-                helm_repo_add_cmd += ' --username %s' % username
+                helm_repo_add_cmd += ' --username "%s"' % username
             if password is not None:
-                helm_repo_add_cmd += ' --password %s' % password
+                helm_repo_add_cmd += ' --password "%s"' % password
 
             if self.dry_run:
                 helm_repo_add_cmd = 'echo ' + helm_repo_add_cmd
@@ -375,7 +375,7 @@ class EntrypointScriptBuilder(object):
         result_link = '%s://%s%s' % (parsed.scheme, parsed.hostname, parsed.path)
         if parsed.username == '00000000-0000-0000-0000-000000000000':
             return url, None, None
-        if parsed.query is not None:
+        if parsed.query != '':
             result_link += '?%s' % parsed.query
         return result_link, parsed.username, parsed.password
 

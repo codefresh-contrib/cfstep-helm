@@ -14,7 +14,7 @@
 #
 
 mask_cmd() {
-    (set -o pipefail && $@ | sed 's/:[^\/][^@]*@/:\*\*\*\*\*@/g')
+    (set -o pipefail && $@ | sed 's/:[^\/][^@]*@/:\*\*\*\*\*@/g' | sed 's/--password .*/--password "\*\*\*\*\*"/g')
 }
 
 CFSTEP_HELM_ROOTDIR="${CFSTEP_HELM_ROOTDIR:-/opt}"
