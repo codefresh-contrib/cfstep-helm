@@ -373,7 +373,7 @@ class EntrypointScriptBuilder(object):
     def _parse_repo_url(self, url):
         parsed = urllib.parse.urlparse(url)
         result_link = '%s://%s%s' % (parsed.scheme, parsed.hostname, parsed.path)
-        if parsed.scheme == 'az':
+        if parsed.password == '00000000-0000-0000-0000-000000000000':
             return url, None, None
         if parsed.query is not None:
             result_link += '?%s' % parsed.query
