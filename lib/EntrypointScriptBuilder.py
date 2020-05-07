@@ -35,6 +35,13 @@ class EntrypointScriptBuilder(object):
         self.google_application_credentials_json = env.get('GOOGLE_APPLICATION_CREDENTIALS_JSON')
         self.chart = self._resolve_chart(env)
         self.helm_version = env.get('HELM_VERSION')
+
+        skip_stable_str = env.get('SKIP_CF_STABLE_HELM_REPO', 'false')
+        if skip_stable_str.upper() == 'TRUE':
+            self.skip_stable = True
+        else:
+            self.skip_stable = False
+
         self.azure_helm_token = None
 
         # Save chart data in files
@@ -374,6 +381,7 @@ class EntrypointScriptBuilder(object):
         lines = ['#!/bin/bash -e']
         lines += self.helm_command_builder.build_export_commands(self.google_application_credentials_json)
         lines += self._build_kubectl_commands()
-        lines += self.helm_command_builder.build_repo_commands()
+        lines += ['helm version --short -c']
+        lines += self.helm_command_builder.build_repo_commands(self.skip_stable)
         lines += self._build_helm_commands()
         return '\n'.join(lines)
