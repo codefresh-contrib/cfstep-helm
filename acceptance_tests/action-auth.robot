@@ -29,3 +29,16 @@ If not sourced it will exit 0
 
     Run with env   ${env}
     Return code should be   0
+
+Run with SKIP_CF_STABLE_HELM_REPO
+    &{env}=   Create dictionary
+    Set to dictionary   ${env}  DRY_RUN   true
+    Set to dictionary   ${env}  ACTION   auth
+    Set to dictionary   ${env}  KUBE_CONTEXT   helm
+    Set to dictionary   ${env}  SKIP_CF_STABLE_HELM_REPO   true
+    Run with env   ${env}
+    Should have succeeded
+    Output contains   helm version --short -c
+    Output does not contain   helm repo add
+
+
