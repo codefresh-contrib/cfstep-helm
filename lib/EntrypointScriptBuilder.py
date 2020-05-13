@@ -171,7 +171,7 @@ class EntrypointScriptBuilder(object):
 
     def _build_kubectl_commands(self):
         lines = []
-        if self.action in ['install', 'promotion', 'auth']:
+        if self.action in ['install', 'promotion']:
             if self.kube_context is None:
                 raise Exception(
                     'Must set KUBE_CONTEXT in environment (Name of Kubernetes cluster as named in Codefresh)')
