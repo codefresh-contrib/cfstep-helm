@@ -45,6 +45,7 @@ class CommandRunner(object):
             self.rc = process.returncode
             # Remove debug lines that start with "+ "
             lines = stdout.split('\\n')
+            logger.console(lines)
             for line in lines:
                 print(line)
             self.stdout = '\n'.join(filter(lambda x: not x.startswith('+ '), lines))
