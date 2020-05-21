@@ -30,6 +30,15 @@ If not sourced it will exit 0
     Run with env   ${env}
     Return code should be   0
 
+If no kube context will exit 0
+    &{env}=   Create dictionary
+    Set to dictionary   ${env}  DRY_RUN   true
+    Set to dictionary   ${env}  ACTION   auth
+
+    Run with env   ${env}
+    Return code should be   0
+
+
 Run with SKIP_CF_STABLE_HELM_REPO
     &{env}=   Create dictionary
     Set to dictionary   ${env}  DRY_RUN   true
