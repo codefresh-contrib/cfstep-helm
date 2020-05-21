@@ -1,5 +1,6 @@
 import os
 import subprocess
+from robot.api import logger
 
 
 class CommandRunner(object):
@@ -28,8 +29,8 @@ class CommandRunner(object):
 
     def run_command_with_env(self, command, detach=False, env={}):
         execution_env = os.environ.copy()
-        print(os.listdir(self.rootdir))
-        print(os.listdir(self.rootdir + "/bin"))
+        logger.console(os.listdir(self.rootdir))
+        logger.console(os.listdir(self.rootdir + "/bin"))
         for key, val in env.items():
             execution_env[str(key)] = str(val)
         process = subprocess.Popen(command,
