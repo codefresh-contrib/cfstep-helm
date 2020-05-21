@@ -33,10 +33,12 @@ class CommandRunner(object):
         logger.console(os.listdir(self.rootdir + "/bin"))
         for key, val in env.items():
             execution_env[str(key)] = str(val)
+        logger.console('start executing')
         process = subprocess.Popen(command,
                                    env=execution_env,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT)
+        logger.console('finish executing')
         if not detach:
             stdout = str(process.communicate()[0].strip())
             self.rc = process.returncode
