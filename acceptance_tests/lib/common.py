@@ -34,6 +34,7 @@ class CommandRunner(object):
         for key, val in env.items():
             execution_env[str(key)] = str(val)
         logger.console('start executing')
+        logger.console(command)
         process = subprocess.Popen(command,
                                    env=execution_env,
                                    stdout=subprocess.PIPE,
