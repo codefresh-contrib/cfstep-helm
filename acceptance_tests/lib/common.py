@@ -35,6 +35,9 @@ class CommandRunner(object):
             execution_env[str(key)] = str(val)
         logger.console('start executing')
         logger.console(command)
+        with open('/codefresh/volume/cfstep-helm/bin/release_chart', 'r') as file:
+            data = file.read().replace('\n', '')
+            logger.console(data)
         process = subprocess.Popen(command,
                                    env=execution_env,
                                    stdout=subprocess.PIPE,
