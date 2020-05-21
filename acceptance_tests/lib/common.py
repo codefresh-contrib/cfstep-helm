@@ -1,6 +1,5 @@
 import os
 import subprocess
-from robot.api import logger
 
 
 class CommandRunner(object):
@@ -29,27 +28,20 @@ class CommandRunner(object):
 
     def run_command_with_env(self, command, detach=False, env={}):
         execution_env = os.environ.copy()
-        logger.console(os.listdir(self.rootdir))
-        logger.console(os.listdir(self.rootdir + "/bin"))
         for key, val in env.items():
             execution_env[str(key)] = str(val)
-        logger.console('start executing')
-        logger.console(command)
         process = subprocess.Popen(command,
                                    env=execution_env,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT)
-        logger.console('finish executing')
         if not detach:
             stdout = str(process.communicate()[0].strip())
             self.rc = process.returncode
             # Remove debug lines that start with "+ "
             lines = stdout.split('\\n')
-            logger.console(lines)
             for line in lines:
                 print(line)
             self.stdout = '\n'.join(filter(lambda x: not x.startswith('+ '), lines))
-            logger.console(self.stdout)
 
 
     def should_have_failed(self):
