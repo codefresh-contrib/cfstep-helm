@@ -34,7 +34,7 @@ class EntrypointScriptBuilder(object):
         self.commit_message = env.get('COMMIT_MESSAGE')
         self.google_application_credentials_json = env.get('GOOGLE_APPLICATION_CREDENTIALS_JSON')
         self.chart = self._resolve_chart(env)
-        self.helm_version = env.get('HELM_VERSION', '2.0.0')
+        self.helm_version = env.get('HELM_VERSION')
 
         skip_stable_str = env.get('SKIP_CF_STABLE_HELM_REPO', 'false')
         if skip_stable_str.upper() == 'TRUE':
@@ -380,18 +380,11 @@ class EntrypointScriptBuilder(object):
         else:
             return Helm2CommandBuilder()
 
-    def _build_version_command(self):
-        build_command = 'helm version --short -c'
-        if self.dry_run:
-            build_command = 'echo ' + build_command
-
-        return [build_command]
-
     def build(self):
         lines = ['#!/bin/bash -e']
         lines += self.helm_command_builder.build_export_commands(self.google_application_credentials_json)
         lines += self._build_kubectl_commands()
-        lines += self._build_version_command()
-        lines += self.helm_command_builder.build_repo_commands(self.skip_stable, self.dry_run)
+        lines += ['helm version --short -c']
+        lines += self.helm_command_builder.build_repo_commands(self.skip_stable)
         lines += self._build_helm_commands()
         return '\n'.join(lines)
