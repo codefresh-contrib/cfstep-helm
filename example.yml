@@ -1,5 +1,5 @@
 deploy:
-  image: codefresh/cfstep-helm:2.9.0
+  image: codefresh/cfstep-helm:3.1.1
   environment:
     - CHART_REF=mychart
     - RELEASE_NAME=mychart-prod
