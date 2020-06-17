@@ -388,7 +388,7 @@ class EntrypointScriptBuilder(object):
         return [build_command]
 
     def _normalize_value_string(self, val):
-            return val.replace("\"", "\\\"")
+        return val.replace("\"", "\\\"")
 
     def build(self):
         lines = ['#!/bin/bash -e']
