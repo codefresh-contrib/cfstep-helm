@@ -113,3 +113,14 @@ CMD_PS is passed to the end of install command
     Should have succeeded
     Output contains   helm upgrade
     Output contains   --my-fake-flag
+
+Must have
+    &{env}=   Create dictionary
+    Set to dictionary   ${env}  VALUE_TEST   "some \"string"
+    Set to dictionary   ${env}  CHART_REF   mychartref
+    Set to dictionary   ${env}  RELEASE_NAME   my-release
+    Set to dictionary   ${env}  KUBE_CONTEXT   my-context
+    Set to dictionary   ${env}  DRY_RUN   true
+    Run with env   ${env}
+    Should have succeeded
+    Output contains   "some \"string
