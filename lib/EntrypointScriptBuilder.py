@@ -28,6 +28,7 @@ class EntrypointScriptBuilder(object):
         self.release_name = env.get('RELEASE_NAME')
         self.namespace = env.get('NAMESPACE')
         self.tiller_namespace = env.get('TILLER_NAMESPACE')
+        self.set_file = env.get('SET_FILE')
         self.dry_run = env.get('DRY_RUN')
         self.recreate_pods = env.get('RECREATE_PODS')
         self.cmd_ps = env.get('CMD_PS')
@@ -301,6 +302,8 @@ class EntrypointScriptBuilder(object):
             helm_upgrade_cmd += self.cmd_ps
         if self.dry_run:
             helm_upgrade_cmd = 'echo ' + helm_upgrade_cmd
+        if self.set_file is not None:
+            helm_upgrade_cmd += '--set-file %s ' % self.set_file
         lines.append(helm_upgrade_cmd)
 
         return lines
