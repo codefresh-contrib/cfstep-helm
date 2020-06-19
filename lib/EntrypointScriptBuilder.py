@@ -234,7 +234,7 @@ class EntrypointScriptBuilder(object):
         for custom_valuesfile in self.custom_valuesfiles:
             helm_promote_cmd += '--values %s ' % custom_valuesfile
         for cli_set_key, val in sorted(self.custom_values.items()):
-            helm_promote_cmd += '--set %s="%s" ' % (cli_set_key, self._normalize_value_string(val))
+            helm_promote_cmd += '--set %s=%s ' % (cli_set_key, self._normalize_value_string(val))
         for cli_set_key, val in sorted(self.string_values.items()):
             helm_promote_cmd += '--set-string %s=%s ' % (cli_set_key, val)
         if self.recreate_pods:
@@ -292,7 +292,7 @@ class EntrypointScriptBuilder(object):
         for custom_valuesfile in self.custom_valuesfiles:
             helm_upgrade_cmd += '--values %s ' % custom_valuesfile
         for cli_set_key, val in sorted(self.custom_values.items()):
-            helm_upgrade_cmd += '--set %s=%s ' % (cli_set_key, val)
+            helm_upgrade_cmd += '--set %s=%s ' % (cli_set_key, self._normalize_value_string(val))
         for cli_set_key, val in sorted(self.string_values.items()):
             helm_upgrade_cmd += '--set-string %s=%s ' % (cli_set_key, val)
         if self.recreate_pods:
@@ -388,7 +388,7 @@ class EntrypointScriptBuilder(object):
         return [build_command]
 
     def _normalize_value_string(self, val):
-        return val.replace("\"", "\\\"")
+        return val.replace(" ", "\\ ")
 
     def build(self):
         lines = ['#!/bin/bash -e']
