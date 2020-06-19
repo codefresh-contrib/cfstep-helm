@@ -294,7 +294,7 @@ class EntrypointScriptBuilder(object):
         for cli_set_key, val in sorted(self.custom_values.items()):
             helm_upgrade_cmd += '--set %s=%s ' % (cli_set_key, val)
         for cli_set_key, val in sorted(self.string_values.items()):
-            helm_upgrade_cmd += '--set-string %s=%s ' % (cli_set_key, val)
+            helm_upgrade_cmd += ' --set-string %s=%s ' % (cli_set_key, val)
         if self.recreate_pods:
             helm_upgrade_cmd += '--recreate-pods '
         if self.cmd_ps is not None:
