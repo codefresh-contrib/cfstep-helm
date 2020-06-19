@@ -113,3 +113,15 @@ CMD_PS is passed to the end of install command
     Should have succeeded
     Output contains   helm upgrade
     Output contains   --my-fake-flag
+
+Install detects SET_FILE correctly
+    &{env}=   Create dictionary
+    Set to dictionary   ${env}  CHART_REF   mychartref
+    Set to dictionary   ${env}  RELEASE_NAME   my-release
+    Set to dictionary   ${env}  KUBE_CONTEXT   my-context
+    Set to dictionary   ${env}  SET_FILE my_script=dothings.sh
+    Run with env   ${env}
+    Should have succeeded
+    Output contains   helm upgrade
+    Output contains   --set-file my_script=dothings.sh
+
