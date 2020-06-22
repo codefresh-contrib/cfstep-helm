@@ -31,7 +31,7 @@ class EntrypointScriptBuilder(object):
         self.set_file = env.get('SET_FILE')
         self.dry_run = env.get('DRY_RUN')
         self.recreate_pods = env.get('RECREATE_PODS')
-        self.wait = env.get('WAIT')
+        self.wait = env.get('WAIT', 'false')
         self.timeout = env.get('TIMEOUT')
         self.cmd_ps = env.get('CMD_PS')
         self.commit_message = env.get('COMMIT_MESSAGE')
@@ -300,7 +300,7 @@ class EntrypointScriptBuilder(object):
             helm_upgrade_cmd += '--set-string %s=%s ' % (cli_set_key, val)
         if self.recreate_pods:
             helm_upgrade_cmd += '--recreate-pods '
-        if self.wait:
+        if self.wait.upper() == 'TRUE':
             helm_upgrade_cmd += '--wait '
         if self.timeout is not None:
             helm_upgrade_cmd += '--timeout %s ' % self.timeout
