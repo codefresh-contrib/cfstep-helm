@@ -129,11 +129,14 @@ Checking escape space charset in values
 
 Install detects SET_FILE correctly
     &{env}=   Create dictionary
+    Set to dictionary   ${env}  VALUE_TEST1   "one two three"
     Set to dictionary   ${env}  CHART_REF   mychartref
     Set to dictionary   ${env}  RELEASE_NAME   my-release
     Set to dictionary   ${env}  KUBE_CONTEXT   my-context
-    Set to dictionary   ${env}  SET_FILE my_script=dothings.sh
+    Set to dictionary   ${env}  SET_FILE   my_script\=test.sh
+    Set to dictionary   ${env}  DRY_RUN   true
+
     Run with env   ${env}
     Should have succeeded
     Output contains   helm upgrade
-    Output contains   --set-file my_script=dothings.sh
+    Output contains   --set-file my_script=test.sh

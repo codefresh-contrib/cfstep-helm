@@ -300,10 +300,10 @@ class EntrypointScriptBuilder(object):
             helm_upgrade_cmd += '--recreate-pods '
         if self.cmd_ps is not None:
             helm_upgrade_cmd += self.cmd_ps
-        if self.dry_run:
-            helm_upgrade_cmd = 'echo ' + helm_upgrade_cmd
         if self.set_file is not None:
             helm_upgrade_cmd += '--set-file %s ' % self.set_file
+        if self.dry_run:
+            helm_upgrade_cmd = 'echo ' + helm_upgrade_cmd
         lines.append(helm_upgrade_cmd)
 
         return lines
