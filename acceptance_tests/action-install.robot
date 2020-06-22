@@ -129,7 +129,6 @@ Checking escape space charset in values
 
 Install detects SET_FILE correctly
     &{env}=   Create dictionary
-    Set to dictionary   ${env}  VALUE_TEST1   "one two three"
     Set to dictionary   ${env}  CHART_REF   mychartref
     Set to dictionary   ${env}  RELEASE_NAME   my-release
     Set to dictionary   ${env}  KUBE_CONTEXT   my-context
@@ -140,3 +139,17 @@ Install detects SET_FILE correctly
     Should have succeeded
     Output contains   helm upgrade
     Output contains   --set-file my_script=test.sh
+
+Install detects WAIT and TIMEOUT correctly
+    &{env}=   Create dictionary
+    Set to dictionary   ${env}  CHART_REF   mychartref
+    Set to dictionary   ${env}  RELEASE_NAME   my-release
+    Set to dictionary   ${env}  KUBE_CONTEXT   my-context
+    Set to dictionary   ${env}  WAIT   true
+    Set to dictionary   ${env}  TIMEOUT   1000
+    Set to dictionary   ${env}  DRY_RUN   true
+
+    Run with env   ${env}
+    Should have succeeded
+    Output contains   helm upgrade
+    Output contains   --wait --timeout 1000
