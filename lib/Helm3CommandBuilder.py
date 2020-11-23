@@ -13,7 +13,7 @@ class Helm3CommandBuilder(BaseCommandBuilder):
     def build_repo_commands(self, skip_stable, dry_run):
         lines = []
         if not skip_stable:
-            add_stable_command = 'helm repo add cf-stable https://kubernetes-charts.storage.googleapis.com/'
+            add_stable_command = 'helm repo add cf-stable https://charts.helm.sh/stable'
             if dry_run:
                 add_stable_command = 'echo ' + add_stable_command
             lines.append(add_stable_command)
