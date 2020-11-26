@@ -42,6 +42,12 @@ class EntrypointScriptBuilder(object):
         self.chart = self._resolve_chart(env)
         self.helm_version = env.get('HELM_VERSION', '2.0.0')
 
+        credentials_in_arguments_str = env.get('CREDENTIALS_IN_ARGUMENTS', 'false')
+        if credentials_in_arguments_str.upper() == 'TRUE':
+            self.credentials_in_arguments = True
+        else:
+            self.credentials_in_arguments = False
+
         skip_stable_str = env.get('SKIP_CF_STABLE_HELM_REPO', 'false')
         if skip_stable_str.upper() == 'TRUE':
             self.skip_stable = True
@@ -134,8 +140,9 @@ class EntrypointScriptBuilder(object):
                 repo_url = val
                 if not repo_url.endswith('/'):
                     repo_url += '/'
+
                 if repo_url.startswith('http://') or repo_url.startswith('https://'):
-                    if helm_repo_username is not None and helm_repo_password is not None:
+                    if not self.credentials_in_arguments and (helm_repo_username is not None) and (helm_repo_password is not None):
                         repo_url = repo_url.replace('://', '://%s:%s@' % (helm_repo_username, helm_repo_password), 1)
 
                 # Modify azure URL to use https and contain token
@@ -212,7 +219,10 @@ class EntrypointScriptBuilder(object):
 
         # Add Helm repos locally
         for repo_name, repo_url in sorted(self.helm_repos.items()):
-            helm_repo_add_cmd = 'helm repo add %s %s' % (repo_name, repo_url)
+            if self.credentials_in_arguments and (self.helm_repo_username is not None) and (self.helm_repo_password is not None):
+                helm_repo_add_cmd = 'helm repo add %s %s --username %s --password %s ' % (repo_name, repo_url, self.helm_repo_username, self.helm_repo_password)
+            else:
+                helm_repo_add_cmd = 'helm repo add %s %s' % (repo_name, repo_url)
             if self.dry_run:
                 helm_repo_add_cmd = 'echo ' + helm_repo_add_cmd
             lines.append(helm_repo_add_cmd)
@@ -273,7 +283,10 @@ class EntrypointScriptBuilder(object):
             pull_args = ' {} --untar --untardir {} '.format(self.chart_ref, DOWNLOAD_CHART_DIR)
             helm_pull_cmd = self.helm_command_builder.build_pull_command() + pull_args
             if self.chart_repo_url is not None:
-                helm_pull_cmd += '--repo %s ' % self.chart_repo_url
+                if self.credentials_in_arguments and (self.chart_repo_url.startswith('http://') or self.chart_repo_url.startswith('https://')) and (self.helm_repo_username is not None) and (self.helm_repo_password is not None):
+                    helm_pull_cmd += '--repo %s --username %s --password %s ' % (self.chart_repo_url, self.helm_repo_username, self.helm_repo_password)
+                else:
+                    helm_pull_cmd += '--repo %s ' % self.chart_repo_url
             if self.chart_version is not None:
                 helm_pull_cmd += '--version %s ' % self.chart_version
             if self.dry_run:
@@ -287,7 +300,10 @@ class EntrypointScriptBuilder(object):
 
         if not self.helm_command_builder.need_pull(self.chart_ref, self.chart_name, self.chart_repo_url, self.chart_version) or self.commit_message is None:
             if self.chart_repo_url is not None:
-                helm_upgrade_cmd += '--repo %s ' % self.chart_repo_url
+                if self.credentials_in_arguments and (self.chart_repo_url.startswith('http://') or self.chart_repo_url.startswith('https://')) and (self.helm_repo_username is not None) and (self.helm_repo_password is not None):
+                    helm_upgrade_cmd += '--repo %s --username %s --password %s ' % (self.chart_repo_url, self.helm_repo_username, self.helm_repo_password)
+                else:
+                    helm_upgrade_cmd += '--repo %s ' % self.chart_repo_url
             if self.chart_version is not None:
                 helm_upgrade_cmd += '--version %s ' % self.chart_version
 
