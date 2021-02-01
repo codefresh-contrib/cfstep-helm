@@ -54,7 +54,7 @@ Able to push to Azure repo
     Should have succeeded
     Output contains   curl
 
-Able to push to Azure with service principal repo
+Able to push to Azure with SP repo
     &{env}=   Create dictionary
     Set to dictionary   ${env}  CHART_REF   mychartref
     Set to dictionary   ${env}  RELEASE_NAME   my-release
