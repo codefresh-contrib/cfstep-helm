@@ -57,7 +57,7 @@ class EntrypointScriptBuilder(object):
         self.azure_helm_token = None
 
         if self.helm_version.startswith('2'):
-            print("\033[93mHelm 2 support will be deprecated soon\033[0m")
+            print("\033[93mHelm 2 will be deprecated on July 16 2021 and will no longer be available\033[0m")
 
         # Save chart data in files
         if self.chart is not None:
