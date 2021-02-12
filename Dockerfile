@@ -22,9 +22,9 @@ RUN curl -L "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz" -o he
     && helm plugin install https://github.com/hypnoglow/helm-s3.git --version=${S3_PLUGIN_VERSION} \
     && helm plugin install https://github.com/nouney/helm-gcs.git --version=${GCS_PLUGIN_VERSION} \
     && helm plugin install https://github.com/chartmuseum/helm-push.git --version=${PUSH_PLUGIN_VERSION} \
-    && rm -rf /root/.helm/helm/plugins/helm-s3.git \
-    && rm -rf /root/.helm/helm/plugins/helm-gcs.git \
-    && rm -rf /root/.helm/helm/plugins/helm-push.git
+    && rm -rf /root/.helm/helm/plugins/https-github.com-hypnoglow-helm-s3.git \
+    && rm -rf /root/.helm/helm/plugins/https-github.com-nouney-helm-gcs.git \
+    && rm -rf /root/.helm/helm/plugins/https-github.com-chartmuseum-helm-push.git
 
 # Run acceptance tests
 COPY Makefile Makefile
