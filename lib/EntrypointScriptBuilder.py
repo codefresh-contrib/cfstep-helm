@@ -56,6 +56,9 @@ class EntrypointScriptBuilder(object):
 
         self.azure_helm_token = None
 
+        if self.helm_version.startswith('2'):
+            print("\033[93mCodefresh will discontinue support for Helm 2 on July 16 2021\033[0m")
+
         # Save chart data in files
         if self.chart is not None:
             self.chart = json.loads(self.chart)
