@@ -225,7 +225,7 @@ class EntrypointScriptBuilder(object):
                 helm_dep_build_cmd = 'echo ' + helm_dep_build_cmd
             lines.append(helm_dep_build_cmd)
 
-        helm_upgrade_cmd = 'helm secrets upgrade %s %s --install --force --reset-values ' % (self.release_name, self.chart_ref)
+        helm_upgrade_cmd = 'helm secrets upgrade %s %s --install ' % (self.release_name, self.chart_ref)
         if self.chart_repo_url is not None:
             helm_upgrade_cmd += '--repo %s ' % self.chart_repo_url
         if self.chart_version is not None:

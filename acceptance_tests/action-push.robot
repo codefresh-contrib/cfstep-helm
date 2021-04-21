@@ -36,11 +36,9 @@ Able to push to GCS repo
     Set to dictionary   ${env}  DRY_RUN   true
     Set to dictionary   ${env}  ACTION   push
     Set to dictionary   ${env}  CHART_REPO_URL  gs://my-gcs-bucket
-    Set to dictionary   ${env}  CMD_PS  --force
     Run with env   ${env}
     Should have succeeded
     Output contains   helm gcs push
-    Output contains   --force
 
 Able to push to Azure repo
     &{env}=   Create dictionary
