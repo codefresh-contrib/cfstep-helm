@@ -48,6 +48,8 @@ RUN apk add --no-cache gnupg \
     && helm plugin install https://github.com/nouney/helm-gcs.git \
     && helm plugin install https://github.com/jkroepke/helm-secrets --version v3.6.0
 
+RUN pip install --no-cache-dir awscli==1.16.266
+
 COPY lib/* /opt/lib/
 
 ENV HELM_VERSION ${HELM_VERSION}
