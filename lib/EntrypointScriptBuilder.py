@@ -481,6 +481,8 @@ class EntrypointScriptBuilder(object):
         return [build_command]
 
     def _normalize_value_string(self, val):
+        if ';' in val:
+            val = '"' + val + '"'
         return val.replace(" ", "\\ ")
 
     def build(self):
