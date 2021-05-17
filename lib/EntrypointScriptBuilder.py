@@ -373,7 +373,10 @@ class EntrypointScriptBuilder(object):
             raise Exception(
                 'Must set CHART_REPO_URL in the environment, otherwise attach a Helm Repo context (prefixed with CF_CTX_)')
 
-        helm_repo_add_cmd = 'helm repo add remote %s' % self.chart_repo_url
+        if self.credentials_in_arguments and (self.helm_repo_username is not None) and (self.helm_repo_password is not None):
+            helm_repo_add_cmd = 'helm repo add remote %s --username %s --password %s ' % (self.chart_repo_url, self.helm_repo_username, self.helm_repo_password)
+        else:
+            helm_repo_add_cmd = 'helm repo add remote %s' % self.chart_repo_url
         if self.dry_run:
             helm_repo_add_cmd = 'echo ' + helm_repo_add_cmd
         lines.append(helm_repo_add_cmd)
