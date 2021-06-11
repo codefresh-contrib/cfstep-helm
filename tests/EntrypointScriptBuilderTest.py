@@ -37,6 +37,36 @@ class EntrypointScriptBuilderTest(unittest.TestCase):
 
         self.assertEqual(script_source, expect)
 
+    def test_helm_behind_firewall(self):
+        env = {
+            'KUBE_CONTEXT': 'local',
+            'CHART_NAME': 'tomcat',
+            'RELEASE_NAME': 'tomcat',
+            'NAMESPACE': 'default',
+            'CHART_VERSION': '0.4.3',
+            'CHART_REPO_URL': 'azsp://test.azure.io',
+            'HELM_VERSION': '3',
+            'HELM_REPO_TOKEN': 'helmRepoToken',
+            'CUSTOM_containers_node_env_secret_VALUE1': 'value1,',
+            'CUSTOM_containers_node_env_secret_VALUE2': 'foo:bar;baz:qux;',
+            'CUSTOM_containers_node_env_secret_VALUE3': 'value3',
+            'CUSTOM_containers_node_env_secret_VALUE4': 'value4'
+        }
+        expect = '#!/bin/bash -e\n'
+        expect += 'export HELM_REPO_ACCESS_TOKEN=$CF_API_KEY\n'
+        expect += 'export HELM_REPO_AUTH_HEADER=Authorization\n'
+        expect += 'kubectl config use-context "local"\n'
+        expect += 'helm version --short -c\n'
+        expect += 'helm upgrade tomcat tomcat --install --reset-values --repo https://00000000-0000-0000-0000-000000000000:helmRepoToken@test.azure.io/helm/v1/repo/ '
+        expect += '--version 0.4.3 --namespace default --set containers.node.env.secret.VALUE1=value1, '
+        expect += '--set containers.node.env.secret.VALUE2="foo:bar;baz:qux;" '
+        expect += '--set containers.node.env.secret.VALUE3=value3 --set containers.node.env.secret.VALUE4=value4 '
+
+        builder = EntrypointScriptBuilder(env)
+        script_source = builder.build()
+
+        self.assertEqual(script_source, expect)
+
     @patch.object(EntrypointScriptBuilder, 'handleNonPluginRepos', return_value='curl -u $HELMREPO_USERNAME:$HELMREPO_PASSWORD -T $PACKAGE https://my-cm-repo.jfrog.io/$(basename $PACKAGE)')
     def test_jfrog_repo(self, mock_urlopen):
         env = {
