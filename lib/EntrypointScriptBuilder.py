@@ -41,6 +41,7 @@ class EntrypointScriptBuilder(object):
         self.google_application_credentials_json = env.get('GOOGLE_APPLICATION_CREDENTIALS_JSON')
         self.chart = self._resolve_chart(env)
         self.helm_version = env.get('HELM_VERSION', '2.0.0')
+        self.helm_repo_token = env.get('HELM_REPO_TOKEN')
 
         credentials_in_arguments_str = env.get('CREDENTIALS_IN_ARGUMENTS', 'false')
         if credentials_in_arguments_str.upper() == 'TRUE':
@@ -135,6 +136,8 @@ class EntrypointScriptBuilder(object):
                                                                1) + '/helm/v1/repo'
 
         if chart_repo_url and chart_repo_url.startswith('azsp://'):
+            if self.helm_repo_token is not None:
+                self.azure_helm_token = self.helm_repo_token
             if not self.azure_helm_token:
                 self.azure_helm_token = self._get_azure_service_principal_helm_token(chart_repo_url)
             chart_repo_url = chart_repo_url.strip('/').replace('azsp://',
@@ -164,6 +167,8 @@ class EntrypointScriptBuilder(object):
                                                 1) + 'helm/v1/repo'
 
                 elif repo_url.startswith('azsp://'):
+                    if self.helm_repo_token is not None:
+                        self.azure_helm_token = self.helm_repo_token
                     if not self.azure_helm_token:
                         self.azure_helm_token = self._get_azure_service_principal_helm_token(repo_url)
                     repo_url = repo_url.replace('azsp://',
