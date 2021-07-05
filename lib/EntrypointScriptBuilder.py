@@ -144,6 +144,12 @@ class EntrypointScriptBuilder(object):
                                                                'https://00000000-0000-0000-0000-000000000000:%s@' % self.azure_helm_token,
                                                                1) + '/helm/v1/repo'
 
+        if chart_repo_url and chart_repo_url.startswith('azmi://'):
+            self.azure_helm_token = self.helm_repo_token
+            chart_repo_url = chart_repo_url.strip('/').replace('azmi://',
+                                                               'https://00000000-0000-0000-0000-000000000000:%s@' % self.azure_helm_token,
+                                                               1) + '/helm/v1/repo'
+
         helm_repo_username = env.get('HELMREPO_USERNAME')
         helm_repo_password = env.get('HELMREPO_PASSWORD')
         for key, val in sorted(env.items()):
@@ -174,6 +180,13 @@ class EntrypointScriptBuilder(object):
                     repo_url = repo_url.replace('azsp://',
                                                 'https://00000000-0000-0000-0000-000000000000:%s@' % self.azure_helm_token,
                                                 1) + 'helm/v1/repo'
+
+                elif repo_url.startswith('azmi://'):
+                    self.azure_helm_token = self.helm_repo_token
+                    repo_url = repo_url.replace('azmi://',
+                                                'https://00000000-0000-0000-0000-000000000000:%s@' % self.azure_helm_token,
+                                                1) + 'helm/v1/repo'
+
 
                 helm_repos[repo_name] = repo_url
                 if self.chart_repo_url is None:
