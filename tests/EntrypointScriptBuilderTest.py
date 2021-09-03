@@ -4,7 +4,15 @@ import sys
 parent_dir_name = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(parent_dir_name)
 from lib.EntrypointScriptBuilder import EntrypointScriptBuilder
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
+
+class ResponseMock(object):
+    def __init__(self, headers):
+        self.headers = headers;
+
+    @property
+    def _headers(self):
+        return self.headers
 
 class EntrypointScriptBuilderTest(unittest.TestCase):
 
@@ -97,8 +105,13 @@ class EntrypointScriptBuilderTest(unittest.TestCase):
 
         self.assertEqual(script_source, expect)
 
-    @patch.object(EntrypointScriptBuilder, 'handleNonPluginRepos', return_value='curl -u $HELMREPO_USERNAME:$HELMREPO_PASSWORD -T $PACKAGE https://my-cm-repo.jfrog.io/$(basename $PACKAGE)')
+    @patch('urllib.request.urlopen')
     def test_jfrog_repo(self, mock_urlopen):
+        cm = MagicMock()
+        cm.getcode.return_value = 200
+        cm.read.return_value = 'contents'
+        cm.info.return_value = ResponseMock({'X-Artifactory-Id':'test', 'Server': 'Test'})
+        mock_urlopen.return_value = cm
         env = {
             'ACTION': 'push',
             'KUBE_CONTEXT': 'local',
