@@ -468,21 +468,22 @@ class EntrypointScriptBuilder(object):
         print("\033[92mThe CHART_REPO_URL has been tested successfully\033[0m")
         print ("Trying to infer Helm repository type from the response headers...")
 
-        if self.isArtifactoryRepo(response):
+        if EntrypointScriptBuilder.is_artifactory_repo(response):
             helm_push_command = 'curl -u $HELMREPO_USERNAME:$HELMREPO_PASSWORD -T $PACKAGE ' + self.chart_repo_url + '$(basename $PACKAGE)'
             return helm_push_command
         else:
             raise Exception("\033[91mFailed to infer the Helm repository type\033[0m")
 
-    def isArtifactoryRepo(self, repoResponse):
+    @staticmethod
+    def is_artifactory_repo(repo_response):
         try:
-            headers = repoResponse.info()._headers
+            headers = [h.lower() for h in repo_response.info()._headers]
             for h in headers:
-                if "X-Artifactory-Id" in h or "Server" in h and "Artifactory" in h[1]:
+                if "x-artifactory-id" in h or "server" in h and "artifactory" in h[1]:
                     print("\033[94mAn Artifactory Helm repository has been recognized\033[0m")
                     return True
         except:
-            None
+            return None
         return False
 
     def _helm_3(self):
