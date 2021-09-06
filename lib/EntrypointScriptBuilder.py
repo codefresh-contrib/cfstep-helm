@@ -205,7 +205,7 @@ class EntrypointScriptBuilder(object):
 
     def _get_normalized_chart_repo_url(self):
         normalized_repo_url = self.chart_repo_url
-        if '@' in normalized_repo_url:
+        if normalized_repo_url and '@' in normalized_repo_url:
             normalized_repo_url = normalized_repo_url.split('//')[0] + '//' + normalized_repo_url.split('@')[1]
         return normalized_repo_url
 
