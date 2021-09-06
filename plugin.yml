@@ -34,6 +34,8 @@ envs:
   - name: CHART_REPO_URL
     type: optional
     description: Helm chart repository URL (overriden by injected Helm repository context)
+  - name: SKIP_REPO_CREDENTIALS_VALIDATION
+    type: optional
   - name: 'CUSTOMFILE_<name>'
     type: optional
     description: 'Values file to provide to Helm (as --file). see usage information below.'
