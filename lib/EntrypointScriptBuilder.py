@@ -438,7 +438,7 @@ class EntrypointScriptBuilder(object):
 
             print("Performing test of the URL '%s' making an authenticated request to it..." % self.normalized_chart_repo_url)
             repo_handling_result = self.handle_non_plugin_repos()
-            if repo_handling_result[1] == 200 or self.skip_repo_credentials_validation:
+            if repo_handling_result[0] is not None or self.skip_repo_credentials_validation:
                 print("\033[92mThe CHART_REPO_URL has been tested successfully\033[0m")
             else:
                 for repo_handling_detail in repo_handling_result[2]:
