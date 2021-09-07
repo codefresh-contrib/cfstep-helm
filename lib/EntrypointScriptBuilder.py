@@ -24,6 +24,8 @@ class EntrypointScriptBuilder(object):
         self.chart_name = env.get('CHART_NAME')
         self.chart_ref = env.get('CHART_REF', env.get('CHART_NAME'))
         self.chart_repo_url = env.get('CHART_REPO_URL')
+        self.normalized_chart_repo_url = self._get_normalized_chart_repo_url()
+        self.skip_repo_credentials_validation = env.get('SKIP_REPO_CREDENTIALS_VALIDATION')
         self.helm_repo_username = env.get('HELMREPO_USERNAME')
         self.helm_repo_password = env.get('HELMREPO_PASSWORD')
         self.chart_version = env.get('CHART_VERSION')
@@ -200,6 +202,12 @@ class EntrypointScriptBuilder(object):
             self.chart_repo_url += '/'
 
         self.helm_command_builder = self._select_helm_command_builder()
+
+    def _get_normalized_chart_repo_url(self):
+        normalized_repo_url = self.chart_repo_url
+        if normalized_repo_url and '@' in normalized_repo_url:
+            normalized_repo_url = normalized_repo_url.split('//')[0] + '//' + normalized_repo_url.split('@')[1]
+        return normalized_repo_url
 
     def _get_azure_helm_token(self, repo_url):
         service = repo_url.replace('az://', '').strip('/')
@@ -426,8 +434,21 @@ class EntrypointScriptBuilder(object):
         elif self.chart_repo_url.startswith('gs://'):
             helm_push_command = 'helm gcs push $PACKAGE remote'
         elif re.match('^(http|https):\/\/', self.chart_repo_url):
-            print ("CHART_REPO_URL protocol is http/https")
-            helm_push_command = self.handleNonPluginRepos()
+            print("CHART_REPO_URL protocol is http/https")
+
+            print("Performing test of the URL '%s' making an authenticated request to it..." % self.normalized_chart_repo_url)
+            repo_handling_result = self.handle_non_plugin_repos()
+            if repo_handling_result[0] is not None or self.skip_repo_credentials_validation:
+                print("\033[92mThe CHART_REPO_URL has been tested successfully\033[0m")
+            else:
+                for repo_handling_detail in repo_handling_result[2]:
+                    print(repo_handling_detail)
+                sys.exit(1)
+
+            print("Trying to infer Helm repository type from the response headers...")
+            helm_push_command = self.get_helm_push_command_from_response(repo_handling_result[0])
+            if helm_push_command is None:
+                raise Exception("\033[91mFailed to infer the Helm repository type\033[0m")
         else:
             raise Exception('Unsupported protocol in CHART_REPO_URL')
 
@@ -441,38 +462,37 @@ class EntrypointScriptBuilder(object):
 
         return lines
 
-    def handleNonPluginRepos(self):
-        repoURL = self.chart_repo_url
-        if '@' in repoURL:
-            repoURL = repoURL.split('//')[0] + '//' + repoURL.split('@')[1]
+    def _validate_repo_credentials(self):
+        print("Performing test of the URL '%s' making an authenticated request to it..." % self.normalized_chart_repo_url)
 
-        print ("Performing test of the URL '%s' making an authenticated request to it..." % repoURL)
-
+        validation_details = []
         try:
-            request = urllib.request.Request(repoURL)
-            authB64 = base64.b64encode(('%s:%s' % (self.helm_repo_username, self.helm_repo_password)).encode()).decode()
-            request.add_header('Authorization', 'Basic %s' % authB64)
+            request = urllib.request.Request(self.normalized_chart_repo_url)
+            auth_b64 = base64.b64encode(('%s:%s' % (self.helm_repo_username, self.helm_repo_password)).encode()).decode()
+            request.add_header('Authorization', 'Basic %s' % auth_b64)
             response = urllib.request.urlopen(request)
+            return response, response.getcode(), validation_details
         except urllib.error.URLError as err:
-            print("\033[91mFailed to test your chart repository url, server responded with: %s %s \033[0m" % (err.code, err.reason))
+            validation_details.append("\033[91mFailed to test your chart repository url, server responded with: %s %s \033[0m" % (err.code, err.reason))
             if err.code == 401:
-                print("\033[91mPlease check the user name and password you specified for the Helm repository")
+                validation_details.append("\033[91mPlease check the user name and password you specified for the Helm repository")
             else:
-                print("\033[91mPlease make sure the repo URL is valid\033[0m")
-            sys.exit(1)
+                validation_details.append("\033[91mPlease make sure the repo URL is valid\033[0m")
+            return None, err.code, validation_details
         except Exception as e:
-            print('\033[91m%s\033[0m' % e)
-            print("\033[91mPlease make sure the repo URL is valid\033[0m")
-            sys.exit(1)
+            validation_details.append('\033[91m%s\033[0m' % e)
+            validation_details.append("\033[91mPlease make sure the repo URL is valid\033[0m")
+            return None, None, validation_details
 
-        print("\033[92mThe CHART_REPO_URL has been tested successfully\033[0m")
-        print ("Trying to infer Helm repository type from the response headers...")
+    def handle_non_plugin_repos(self):
+        response_obj, status_code, validation_details = self._validate_repo_credentials()
+        return response_obj, status_code, validation_details
 
-        if EntrypointScriptBuilder.is_artifactory_repo(response):
+    def get_helm_push_command_from_response(self, response_obj):
+        helm_push_command = None
+        if EntrypointScriptBuilder.is_artifactory_repo(response_obj):
             helm_push_command = 'curl -u $HELMREPO_USERNAME:$HELMREPO_PASSWORD -T $PACKAGE ' + self.chart_repo_url + '$(basename $PACKAGE)'
-            return helm_push_command
-        else:
-            raise Exception("\033[91mFailed to infer the Helm repository type\033[0m")
+        return helm_push_command
 
     @staticmethod
     def is_artifactory_repo(repo_response):
