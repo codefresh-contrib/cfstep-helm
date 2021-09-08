@@ -485,7 +485,7 @@ class EntrypointScriptBuilder(object):
             headers = repoResponse.info()._headers
             for h in headers:
                 if ("X-Artifactory-Id" in h) or ("Server" in h and "Artifactory" in h[1]) or\
-                        ("x-artifactory-id"in h) or ("server" in h and "artifactory" in h[1]):
+                        ("x-artifactory-id" in h) or ("server" in h and "artifactory" in h[1]):
                     print("\033[94mAn Artifactory Helm repository has been recognized\033[0m")
                     return True
             print("\033[91mNot found Artifactory Helm repository headers\033[0m")

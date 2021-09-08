@@ -111,7 +111,7 @@ class EntrypointScriptBuilderTest(unittest.TestCase):
         cm = MagicMock()
         cm.getcode.return_value = 200
         cm.read.return_value = 'contents'
-        cm.info.return_value = ResponseMock({'X-Artifactory-Id':'test', 'Server': 'Test'})
+        cm.info.return_value = ResponseMock({('X-Artifactory-Id')})
         mock_urlopen.return_value = cm
         env = {
             'ACTION': 'push',
@@ -137,6 +137,43 @@ class EntrypointScriptBuilderTest(unittest.TestCase):
         builder = EntrypointScriptBuilder(env)
         script_source = builder.build()
 
+        self.assertEqual(script_source, expect)
+
+    @patch('urllib.request.urlopen')
+    def test_jfrog_repo_http_2(self, mock_urlopen):
+        cm = MagicMock()
+        cm.getcode.return_value = 200
+        cm.read.return_value = 'contents'
+        cm.info.return_value = ResponseMock({('server', 'artifactory')})
+        mock_urlopen.return_value = cm
+        env = {
+            'ACTION': 'push',
+            'KUBE_CONTEXT': 'local',
+            'CHART_NAME': 'tomcat',
+            'RELEASE_NAME': 'tomcat',
+            'NAMESPACE': 'default',
+            'CHART_VERSION': '0.4.3',
+            'CHART_REPO_URL': 'https://my-cm-repo.jfrog.io/',
+            'HELM_VERSION': '3',
+            'CREDENTIALS_IN_ARGUMENTS': 'true',
+            'HELMREPO_USERNAME': 'user',
+            'HELMREPO_PASSWORD': 'pass'
+        }
+        expect = '#!/bin/bash -e\n'
+        expect += 'export HELM_REPO_ACCESS_TOKEN=$CF_API_KEY\n'
+        expect += 'export HELM_REPO_AUTH_HEADER=Authorization\n'
+        expect += 'helm version --short -c\n'
+        expect += 'helm repo add remote https://my-cm-repo.jfrog.io/ --username user --password pass \n'
+        expect += 'helm dependency build tomcat || helm dependency update tomcat || echo "dependencies cannot be updated"\n'
+        expect += 'PACKAGE="$(helm package tomcat --version 0.4.3 --destination /tmp | cut -d " " -f 8)"\n'
+        expect += 'curl -u $HELMREPO_USERNAME:$HELMREPO_PASSWORD -T $PACKAGE https://my-cm-repo.jfrog.io/$(basename $PACKAGE)'
+        builder = EntrypointScriptBuilder(env)
+        script_source = builder.build()
+
+        self.assertEqual(script_source, expect)
+
+        cm.info.return_value = ResponseMock({('x-artifactory-id')})
+        script_source = builder.build()
         self.assertEqual(script_source, expect)
 
     def test_jfrog_repo_with_skip_repo_credentials_validation(self):
