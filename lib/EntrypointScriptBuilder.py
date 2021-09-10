@@ -24,6 +24,7 @@ class EntrypointScriptBuilder(object):
         self.chart_name = env.get('CHART_NAME')
         self.chart_ref = env.get('CHART_REF', env.get('CHART_NAME'))
         self.chart_repo_url = env.get('CHART_REPO_URL')
+        self.skip_repo_credentials_validation = env.get('SKIP_REPO_CREDENTIALS_VALIDATION', 'false')
         self.helm_repo_username = env.get('HELMREPO_USERNAME')
         self.helm_repo_password = env.get('HELMREPO_PASSWORD')
         self.chart_version = env.get('CHART_VERSION')
@@ -427,7 +428,7 @@ class EntrypointScriptBuilder(object):
             helm_push_command = 'helm gcs push $PACKAGE remote'
         elif re.match('^(http|https):\/\/', self.chart_repo_url):
             print ("CHART_REPO_URL protocol is http/https")
-            helm_push_command = self.handleNonPluginRepos()
+            helm_push_command = self.handle_non_plugin_repos()
         else:
             raise Exception('Unsupported protocol in CHART_REPO_URL')
 
@@ -441,22 +442,28 @@ class EntrypointScriptBuilder(object):
 
         return lines
 
-    def handleNonPluginRepos(self):
-        repoURL = self.chart_repo_url
-        if '@' in repoURL:
-            repoURL = repoURL.split('//')[0] + '//' + repoURL.split('@')[1]
+    def _get_normalized_chart_repo_url(self):
+        normalized_repo_url = self.chart_repo_url
+        if normalized_repo_url and '@' in normalized_repo_url:
+            normalized_repo_url = normalized_repo_url.split('//')[0] + '//' + normalized_repo_url.split('@')[1]
+        return normalized_repo_url
 
-        print ("Performing test of the URL '%s' making an authenticated request to it..." % repoURL)
+    def handle_non_plugin_repos(self):
+        helm_push_command = 'curl -u $HELMREPO_USERNAME:$HELMREPO_PASSWORD -T $PACKAGE ' + self.chart_repo_url + '$(basename $PACKAGE)'
+        normalized_repo_url = self._get_normalized_chart_repo_url()
+        print("Performing test of the URL '%s' making an authenticated request to it..." % normalized_repo_url)
+        if self.skip_repo_credentials_validation.upper() == 'TRUE':
+            return helm_push_command
 
         try:
-            request = urllib.request.Request(repoURL)
+            request = urllib.request.Request(normalized_repo_url)
             authB64 = base64.b64encode(('%s:%s' % (self.helm_repo_username, self.helm_repo_password)).encode()).decode()
             request.add_header('Authorization', 'Basic %s' % authB64)
             response = urllib.request.urlopen(request)
         except urllib.error.URLError as err:
             print("\033[91mFailed to test your chart repository url, server responded with: %s %s \033[0m" % (err.code, err.reason))
             if err.code == 401:
-                print("\033[91mPlease check the user name and password you specified for the Helm repository")
+                print("\033[91mPlease check the user name and password you specified for the Helm repository\033[0m")
             else:
                 print("\033[91mPlease make sure the repo URL is valid\033[0m")
             sys.exit(1)
@@ -468,21 +475,23 @@ class EntrypointScriptBuilder(object):
         print("\033[92mThe CHART_REPO_URL has been tested successfully\033[0m")
         print ("Trying to infer Helm repository type from the response headers...")
 
-        if self.isArtifactoryRepo(response):
-            helm_push_command = 'curl -u $HELMREPO_USERNAME:$HELMREPO_PASSWORD -T $PACKAGE ' + self.chart_repo_url + '$(basename $PACKAGE)'
+        if self.is_artifactory_repo(response):
             return helm_push_command
         else:
             raise Exception("\033[91mFailed to infer the Helm repository type\033[0m")
 
-    def isArtifactoryRepo(self, repoResponse):
+    def is_artifactory_repo(self, repoResponse):
         try:
             headers = repoResponse.info()._headers
             for h in headers:
-                if "X-Artifactory-Id" in h or "Server" in h and "Artifactory" in h[1]:
+                if ("X-Artifactory-Id" in h) or ("Server" in h and "Artifactory" in h[1]) or\
+                        ("x-artifactory-id" in h) or ("server" in h and "artifactory" in h[1]):
                     print("\033[94mAn Artifactory Helm repository has been recognized\033[0m")
                     return True
-        except:
-            None
+            print("\033[91mNot found Artifactory Helm repository headers\033[0m")
+        except Exception as e:
+            print('\033[91m%s\033[0m' % e)
+            return None
         return False
 
     def _helm_3(self):
