@@ -232,10 +232,11 @@ class EntrypointScriptBuilder(object):
         cf_build_url_parsed = urllib.parse.urlparse(cf_build_url)
         token_url = '%s://%s/api/clusters/aks-sp/helm/repos/%s/token' % (
             cf_build_url_parsed.scheme, cf_build_url_parsed.netloc, service)
-        if self.client_id and self.client_secret and self.tenant:
-            qstr = urllib.parse.urlencode({ 'clientId': self.client_id, 'clientSecret': self.client_secret, 'tenant': self.tenant})
-            token_url += '?'+qstr
         request = urllib.request.Request(token_url)
+        if self.client_id and self.client_secret and self.tenant:
+            data = { 'clientId': self.client_id, 'clientSecret': self.client_secret, 'tenant': self.tenant}
+            data = urllib.parse.urlencode(data).encode()
+            request = urllib.request.Request(token_url, data)
         request.add_header('Authorization', os.getenv('CF_API_KEY'))
         data = json.load(urllib.request.urlopen(request))
         return data['access_token']
