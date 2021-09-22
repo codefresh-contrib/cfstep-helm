@@ -43,6 +43,9 @@ class EntrypointScriptBuilder(object):
         self.chart = self._resolve_chart(env)
         self.helm_version = env.get('HELM_VERSION', '2.0.0')
         self.helm_repo_token = env.get('HELM_REPO_TOKEN')
+        self.client_id = env.get('CLIENT_ID')
+        self.client_secret = env.get('CLIENT_SECRET')
+        self.tenant = env.get('TENANT')
 
         credentials_in_arguments_str = env.get('CREDENTIALS_IN_ARGUMENTS', 'false')
         if credentials_in_arguments_str.upper() == 'TRUE':
@@ -229,6 +232,9 @@ class EntrypointScriptBuilder(object):
         cf_build_url_parsed = urllib.parse.urlparse(cf_build_url)
         token_url = '%s://%s/api/clusters/aks-sp/helm/repos/%s/token' % (
             cf_build_url_parsed.scheme, cf_build_url_parsed.netloc, service)
+        if self.client_id and self.client_secret and self.tenant:
+            qstr = urllib.parse.urlencode({ 'clientId': self.client_id, 'clientSecret': self.client_secret, 'tenant': self.tenant})
+            token_url += '?'+qstr
         request = urllib.request.Request(token_url)
         request.add_header('Authorization', os.getenv('CF_API_KEY'))
         data = json.load(urllib.request.urlopen(request))
