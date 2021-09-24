@@ -241,7 +241,7 @@ class EntrypointScriptBuilderTest(unittest.TestCase):
     def test_helm_repository_integration(self, mock_urlopen):
         cm = MagicMock()
         cm.getcode.return_value = 200
-        cm.read.side_effect = [ '{"spec": {"data":{ "repositoryUrl": "azsp://test.azure.io", "variables": {"CLIENT_ID": "client", "CLIENT_SECRET": "secret", "TENANT": "mytenant"} }}}', '{"access_token": "accessToken"}' ]
+        cm.read.side_effect = [ '{"metadata":{"name":"helmSP"},"spec": {"data":{ "repositoryUrl": "azsp://test.azure.io", "variables": {"CLIENT_ID": "client", "CLIENT_SECRET": "secret", "TENANT": "mytenant"} }}}', '{"access_token": "accessToken"}' ]
         mock_urlopen.return_value = cm
         env = {
             'KUBE_CONTEXT': 'local',
@@ -249,7 +249,6 @@ class EntrypointScriptBuilderTest(unittest.TestCase):
             'RELEASE_NAME': 'tomcat',
             'NAMESPACE': 'default',
             'CHART_VERSION': '0.4.3',
-            'CHART_REPO_URL': 'azsp://test2.azure.io',
             'HELM_VERSION': '3',
             'HELM_REPOSITORY_CONTEXT': 'helmSP',
             'CUSTOM_containers_node_env_secret_VALUE1': 'value1,',
@@ -262,6 +261,7 @@ class EntrypointScriptBuilderTest(unittest.TestCase):
         expect += 'export HELM_REPO_AUTH_HEADER=Authorization\n'
         expect += 'kubectl config use-context "local"\n'
         expect += 'helm version --short -c\n'
+        expect += 'helm repo add helmsp https://00000000-0000-0000-0000-000000000000:accessToken@test.azure.io/helm/v1/repo\n'
         expect += 'helm upgrade tomcat tomcat --install --reset-values --repo https://00000000-0000-0000-0000-000000000000:accessToken@test.azure.io/helm/v1/repo/ '
         expect += '--version 0.4.3 --namespace default --set containers.node.env.secret.VALUE1=value1, '
         expect += '--set containers.node.env.secret.VALUE2="foo:bar;baz:qux;" '
