@@ -46,6 +46,7 @@ class EntrypointScriptBuilder(object):
         self.client_id = env.get('CLIENT_ID')
         self.client_secret = env.get('CLIENT_SECRET')
         self.tenant = env.get('TENANT')
+        self.helm_repository_context = env.get('HELM_REPOSITORY_CONTEXT')
 
         credentials_in_arguments_str = env.get('CREDENTIALS_IN_ARGUMENTS', 'false')
         if credentials_in_arguments_str.upper() == 'TRUE':
@@ -60,6 +61,21 @@ class EntrypointScriptBuilder(object):
             self.skip_stable = False
 
         self.azure_helm_token = None
+        if self.helm_repository_context:
+            context_integration = self._get_variables_from_helm_repo_integration(self.helm_repository_context)
+            repo_url = context_integration.get('repositoryUrl')
+            if repo_url is not None:
+                self.chart_repo_url = repo_url
+            variables = context_integration.get('variables')
+            if repo_url is not None and repo_url.startswith('gs://'):
+                self.google_application_credentials_json = variables.get('GOOGLE_APPLICATION_CREDENTIALS_JSON')
+            elif repo_url is not None and repo_url.startswith('azsp://'):
+                self.client_id = variables.get('CLIENT_ID')
+                self.client_secret = variables.get('CLIENT_SECRET')
+                self.tenant = variables.get('TENANT')
+            elif repo_url is not None and (repo_url.startswith('http://') or repo_url.startswith('https://')):
+                self.client_id = variables.get('HELMREPO_USERNAME')
+                self.client_secret = variables.get('HELMREPO_PASSWORD')
 
         if self.helm_version.startswith('2'):
             print("\033[93mCodefresh will discontinue support for Helm 2 on July 16 2021\033[0m")
@@ -204,6 +220,21 @@ class EntrypointScriptBuilder(object):
             self.chart_repo_url += '/'
 
         self.helm_command_builder = self._select_helm_command_builder()
+
+    def _get_variables_from_helm_repo_integration(self, helm_repo_integration):
+        if self.dry_run:
+            return 'xXxXx'
+        cf_build_url = os.getenv('CF_BUILD_URL', 'https://g.codefresh.io')
+        if 'local' in cf_build_url:
+            cf_build_url = 'http://' + os.getenv('CF_HOST_IP')
+        cf_build_url_parsed = urllib.parse.urlparse(cf_build_url)
+        query_string = urllib.parse.urlencode({'decrypt': 'true'})
+        token_url = '%s://%s/api/contexts/%s?%s' % (
+            cf_build_url_parsed.scheme, cf_build_url_parsed.netloc, helm_repo_integration, query_string)
+        request = urllib.request.Request(token_url)
+        request.add_header('Authorization', os.getenv('CF_API_KEY'))
+        data = json.load(urllib.request.urlopen(request))
+        return data.get('spec', {}).get('data', {});
 
     def _get_azure_helm_token(self, repo_url):
         service = repo_url.replace('az://', '').strip('/')

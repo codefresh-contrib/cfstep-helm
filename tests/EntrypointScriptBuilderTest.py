@@ -190,6 +190,91 @@ class EntrypointScriptBuilderTest(unittest.TestCase):
         self.assertIsNone(args[0][0].data)
         self.assertEqual(script_source, expect)
 
+    @patch.dict(os.environ, {'CF_BUILD_URL': 'local.codefresh.io', 'CF_HOST_IP': 'local.codefresh.io',  'CF_API_KEY': 'apiKey'}, clear=True)
+    @patch('urllib.request.urlopen')
+    def test_helm_cf_ctx_context(self, mock_urlopen):
+        cm = MagicMock()
+        cm.getcode.return_value = 200
+        cm.read.return_value = '{"access_token": "accessToken"}'
+        mock_urlopen.return_value = cm
+        env = {
+            'KUBE_CONTEXT': 'local',
+            'CHART_NAME': 'tomcat',
+            'RELEASE_NAME': 'tomcat',
+            'NAMESPACE': 'default',
+            'CHART_VERSION': '0.4.3',
+            #'CHART_REPO_URL': 'azsp://test2.azure.io',
+            'HELM_VERSION': '3',
+            #'HELM_REPOSITORY_CONTEXT': 'helmSP',
+            'CF_CTX_test_URL': 'azsp://test3.azure.io',
+            'CF_CTX_test2_URL': 'azsp://test4.azure.io',
+            'CUSTOM_containers_node_env_secret_VALUE1': 'value1,',
+            'CUSTOM_containers_node_env_secret_VALUE2': 'foo:bar;baz:qux;',
+            'CUSTOM_containers_node_env_secret_VALUE3': 'value3',
+            'CUSTOM_containers_node_env_secret_VALUE4': 'value4',
+            'CLIENT_ID': 'clientId',
+            'CLIENT_SECRET': 'clientSecret',
+            'TENANT': 'tenant',
+        }
+        expect = '#!/bin/bash -e\n'
+        expect += 'export HELM_REPO_ACCESS_TOKEN=$CF_API_KEY\n'
+        expect += 'export HELM_REPO_AUTH_HEADER=Authorization\n'
+        expect += 'kubectl config use-context "local"\n'
+        expect += 'helm version --short -c\n'
+        expect += 'helm repo add test https://00000000-0000-0000-0000-000000000000:accessToken@test3.azure.io/helm/v1/repo\n'
+        expect += 'helm repo add test2 https://00000000-0000-0000-0000-000000000000:accessToken@test4.azure.io/helm/v1/repo\n'
+        expect += 'helm upgrade tomcat tomcat --install --reset-values --repo https://00000000-0000-0000-0000-000000000000:accessToken@test3.azure.io/helm/v1/repo/ '
+        expect += '--version 0.4.3 --namespace default --set containers.node.env.secret.VALUE1=value1, '
+        expect += '--set containers.node.env.secret.VALUE2="foo:bar;baz:qux;" '
+        expect += '--set containers.node.env.secret.VALUE3=value3 --set containers.node.env.secret.VALUE4=value4 '
+
+        builder = EntrypointScriptBuilder(env)
+        script_source = builder.build()
+        args = mock_urlopen.call_args
+        self.assertEqual(str(args[0][0].full_url), 'http://local.codefresh.io/api/clusters/aks-sp/helm/repos/test4.azure.io/token')
+        self.assertEqual(str(args[0][0].headers['Authorization']), 'apiKey')
+        self.assertEqual(str(args[0][0].data), 'b\'clientId=clientId&clientSecret=clientSecret&tenant=tenant\'')
+        self.assertEqual(script_source, expect)
+
+    @patch.dict(os.environ, {'CF_BUILD_URL': 'local.codefresh.io', 'CF_HOST_IP': 'local.codefresh.io',  'CF_API_KEY': 'apiKey'}, clear=True)
+    @patch('urllib.request.urlopen')
+    def test_helm_repository_integration(self, mock_urlopen):
+        cm = MagicMock()
+        cm.getcode.return_value = 200
+        cm.read.side_effect = [ '{"spec": {"data":{ "repositoryUrl": "azsp://test.azure.io", "variables": {"CLIENT_ID": "client", "CLIENT_SECRET": "secret", "TENANT": "mytenant"} }}}', '{"access_token": "accessToken"}' ]
+        mock_urlopen.return_value = cm
+        env = {
+            'KUBE_CONTEXT': 'local',
+            'CHART_NAME': 'tomcat',
+            'RELEASE_NAME': 'tomcat',
+            'NAMESPACE': 'default',
+            'CHART_VERSION': '0.4.3',
+            'CHART_REPO_URL': 'azsp://test2.azure.io',
+            'HELM_VERSION': '3',
+            'HELM_REPOSITORY_CONTEXT': 'helmSP',
+            'CUSTOM_containers_node_env_secret_VALUE1': 'value1,',
+            'CUSTOM_containers_node_env_secret_VALUE2': 'foo:bar;baz:qux;',
+            'CUSTOM_containers_node_env_secret_VALUE3': 'value3',
+            'CUSTOM_containers_node_env_secret_VALUE4': 'value4'
+        }
+        expect = '#!/bin/bash -e\n'
+        expect += 'export HELM_REPO_ACCESS_TOKEN=$CF_API_KEY\n'
+        expect += 'export HELM_REPO_AUTH_HEADER=Authorization\n'
+        expect += 'kubectl config use-context "local"\n'
+        expect += 'helm version --short -c\n'
+        expect += 'helm upgrade tomcat tomcat --install --reset-values --repo https://00000000-0000-0000-0000-000000000000:accessToken@test.azure.io/helm/v1/repo/ '
+        expect += '--version 0.4.3 --namespace default --set containers.node.env.secret.VALUE1=value1, '
+        expect += '--set containers.node.env.secret.VALUE2="foo:bar;baz:qux;" '
+        expect += '--set containers.node.env.secret.VALUE3=value3 --set containers.node.env.secret.VALUE4=value4 '
+
+        builder = EntrypointScriptBuilder(env)
+        script_source = builder.build()
+        args = mock_urlopen.call_args
+        self.assertEqual(str(args[0][0].full_url), 'http://local.codefresh.io/api/clusters/aks-sp/helm/repos/test.azure.io/token')
+        self.assertEqual(str(args[0][0].headers['Authorization']), 'apiKey')
+        self.assertEqual(str(args[0][0].data), 'b\'clientId=client&clientSecret=secret&tenant=mytenant\'')
+        self.assertEqual(script_source, expect)
+
     @patch('urllib.request.urlopen')
     def test_jfrog_repo(self, mock_urlopen):
         cm = MagicMock()
