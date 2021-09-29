@@ -43,6 +43,10 @@ class EntrypointScriptBuilder(object):
         self.chart = self._resolve_chart(env)
         self.helm_version = env.get('HELM_VERSION', '2.0.0')
         self.helm_repo_token = env.get('HELM_REPO_TOKEN')
+        self.client_id = env.get('CLIENT_ID')
+        self.client_secret = env.get('CLIENT_SECRET')
+        self.tenant = env.get('TENANT')
+        self.helm_repository_context = env.get('HELM_REPOSITORY_CONTEXT')
 
         credentials_in_arguments_str = env.get('CREDENTIALS_IN_ARGUMENTS', 'false')
         if credentials_in_arguments_str.upper() == 'TRUE':
@@ -57,6 +61,22 @@ class EntrypointScriptBuilder(object):
             self.skip_stable = False
 
         self.azure_helm_token = None
+        if self.helm_repository_context:
+            context_integration = self._get_variables_from_helm_repo_integration(self.helm_repository_context)
+            repo_url = context_integration.get('repositoryUrl')
+            integration_name = context_integration.get('name')
+            if repo_url is not None and integration_name is not None:
+                env['CF_CTX_'+integration_name+'_URL'] = repo_url
+            variables = context_integration.get('variables')
+            if repo_url is not None and repo_url.startswith('gs://'):
+                self.google_application_credentials_json = variables.get('GOOGLE_APPLICATION_CREDENTIALS_JSON')
+            elif repo_url is not None and repo_url.startswith('azsp://'):
+                self.client_id = variables.get('CLIENT_ID')
+                self.client_secret = variables.get('CLIENT_SECRET')
+                self.tenant = variables.get('TENANT')
+            elif repo_url is not None and (repo_url.startswith('http://') or repo_url.startswith('https://')):
+                self.client_id = variables.get('HELMREPO_USERNAME')
+                self.client_secret = variables.get('HELMREPO_PASSWORD')
 
         if self.helm_version.startswith('2'):
             print("\033[93mCodefresh will discontinue support for Helm 2 on July 16 2021\033[0m")
@@ -162,7 +182,8 @@ class EntrypointScriptBuilder(object):
                     repo_url += '/'
 
                 if repo_url.startswith('http://') or repo_url.startswith('https://'):
-                    if not self.credentials_in_arguments and (helm_repo_username is not None) and (helm_repo_password is not None):
+                    if not self.credentials_in_arguments and (helm_repo_username is not None) and (
+                            helm_repo_password is not None):
                         repo_url = repo_url.replace('://', '://%s:%s@' % (helm_repo_username, helm_repo_password), 1)
 
                 # Modify azure URL to use https and contain token
@@ -188,7 +209,6 @@ class EntrypointScriptBuilder(object):
                                                 'https://00000000-0000-0000-0000-000000000000:%s@' % self.azure_helm_token,
                                                 1) + 'helm/v1/repo'
 
-
                 helm_repos[repo_name] = repo_url
                 if self.chart_repo_url is None:
                     chart_repo_url = repo_url
@@ -201,6 +221,25 @@ class EntrypointScriptBuilder(object):
             self.chart_repo_url += '/'
 
         self.helm_command_builder = self._select_helm_command_builder()
+
+    def _get_variables_from_helm_repo_integration(self, helm_repo_integration):
+        if self.dry_run:
+            return 'xXxXx'
+        cf_build_url = os.getenv('CF_BUILD_URL', 'https://g.codefresh.io')
+        if 'local' in cf_build_url:
+            cf_build_url = 'http://' + os.getenv('CF_HOST_IP')
+        cf_build_url_parsed = urllib.parse.urlparse(cf_build_url)
+        query_string = urllib.parse.urlencode({'decrypt': 'true'})
+        token_url = '%s://%s/api/contexts/%s?%s' % (
+            cf_build_url_parsed.scheme, cf_build_url_parsed.netloc, helm_repo_integration, query_string)
+        request = urllib.request.Request(token_url)
+        request.add_header('Authorization', os.getenv('CF_API_KEY'))
+        data = json.load(urllib.request.urlopen(request))
+        return {
+            "name": data.get("metadata", {}).get("name"),
+            "repositoryUrl": data.get('spec', {}).get('data', {}).get('repositoryUrl'),
+            "variables": data.get('spec', {}).get('data', {}).get('variables'),
+        };
 
     def _get_azure_helm_token(self, repo_url):
         service = repo_url.replace('az://', '').strip('/')
@@ -230,6 +269,10 @@ class EntrypointScriptBuilder(object):
         token_url = '%s://%s/api/clusters/aks-sp/helm/repos/%s/token' % (
             cf_build_url_parsed.scheme, cf_build_url_parsed.netloc, service)
         request = urllib.request.Request(token_url)
+        if self.client_id and self.client_secret and self.tenant:
+            data = {'clientId': self.client_id, 'clientSecret': self.client_secret, 'tenant': self.tenant}
+            data = urllib.parse.urlencode(data).encode()
+            request = urllib.request.Request(token_url, data)
         request.add_header('Authorization', os.getenv('CF_API_KEY'))
         data = json.load(urllib.request.urlopen(request))
         return data['access_token']
@@ -271,8 +314,10 @@ class EntrypointScriptBuilder(object):
 
         # Add Helm repos locally
         for repo_name, repo_url in sorted(self.helm_repos.items()):
-            if self.credentials_in_arguments and (self.helm_repo_username is not None) and (self.helm_repo_password is not None):
-                helm_repo_add_cmd = 'helm repo add %s %s --username %s --password %s ' % (repo_name, repo_url, self.helm_repo_username, self.helm_repo_password)
+            if self.credentials_in_arguments and (self.helm_repo_username is not None) and (
+                    self.helm_repo_password is not None):
+                helm_repo_add_cmd = 'helm repo add %s %s --username %s --password %s ' % (
+                repo_name, repo_url, self.helm_repo_username, self.helm_repo_password)
             else:
                 helm_repo_add_cmd = 'helm repo add %s %s' % (repo_name, repo_url)
             if self.dry_run:
@@ -330,13 +375,18 @@ class EntrypointScriptBuilder(object):
 
         chart_path = self.chart_ref
 
-        if self.commit_message is not None and self.helm_command_builder.need_pull(self.chart_ref, self.chart_name, self.chart_repo_url, self.chart_version):
+        if self.commit_message is not None and self.helm_command_builder.need_pull(self.chart_ref, self.chart_name,
+                                                                                   self.chart_repo_url,
+                                                                                   self.chart_version):
             chart_path = "{}/{}".format(DOWNLOAD_CHART_DIR, self.chart_ref.split("/")[-1])
             pull_args = ' {} --untar --untardir {} '.format(self.chart_ref, DOWNLOAD_CHART_DIR)
             helm_pull_cmd = self.helm_command_builder.build_pull_command() + pull_args
             if self.chart_repo_url is not None:
-                if self.credentials_in_arguments and (self.chart_repo_url.startswith('http://') or self.chart_repo_url.startswith('https://')) and (self.helm_repo_username is not None) and (self.helm_repo_password is not None):
-                    helm_pull_cmd += '--repo %s --username %s --password %s ' % (self.chart_repo_url, self.helm_repo_username, self.helm_repo_password)
+                if self.credentials_in_arguments and (
+                        self.chart_repo_url.startswith('http://') or self.chart_repo_url.startswith('https://')) and (
+                        self.helm_repo_username is not None) and (self.helm_repo_password is not None):
+                    helm_pull_cmd += '--repo %s --username %s --password %s ' % (
+                    self.chart_repo_url, self.helm_repo_username, self.helm_repo_password)
                 else:
                     helm_pull_cmd += '--repo %s ' % self.chart_repo_url
             if self.chart_version is not None:
@@ -350,10 +400,14 @@ class EntrypointScriptBuilder(object):
 
         helm_upgrade_cmd = self.helm_command_builder.build_helm_upgrade_command(self.release_name, chart_path)
 
-        if not self.helm_command_builder.need_pull(self.chart_ref, self.chart_name, self.chart_repo_url, self.chart_version) or self.commit_message is None:
+        if not self.helm_command_builder.need_pull(self.chart_ref, self.chart_name, self.chart_repo_url,
+                                                   self.chart_version) or self.commit_message is None:
             if self.chart_repo_url is not None:
-                if self.credentials_in_arguments and (self.chart_repo_url.startswith('http://') or self.chart_repo_url.startswith('https://')) and (self.helm_repo_username is not None) and (self.helm_repo_password is not None):
-                    helm_upgrade_cmd += '--repo %s --username %s --password %s ' % (self.chart_repo_url, self.helm_repo_username, self.helm_repo_password)
+                if self.credentials_in_arguments and (
+                        self.chart_repo_url.startswith('http://') or self.chart_repo_url.startswith('https://')) and (
+                        self.helm_repo_username is not None) and (self.helm_repo_password is not None):
+                    helm_upgrade_cmd += '--repo %s --username %s --password %s ' % (
+                    self.chart_repo_url, self.helm_repo_username, self.helm_repo_password)
                 else:
                     helm_upgrade_cmd += '--repo %s ' % self.chart_repo_url
             if self.chart_version is not None:
@@ -392,8 +446,10 @@ class EntrypointScriptBuilder(object):
             raise Exception(
                 'Must set CHART_REPO_URL in the environment, otherwise attach a Helm Repo context (prefixed with CF_CTX_)')
 
-        if self.credentials_in_arguments and (self.helm_repo_username is not None) and (self.helm_repo_password is not None):
-            helm_repo_add_cmd = 'helm repo add remote %s --username %s --password %s ' % (self.chart_repo_url, self.helm_repo_username, self.helm_repo_password)
+        if self.credentials_in_arguments and (self.helm_repo_username is not None) and (
+                self.helm_repo_password is not None):
+            helm_repo_add_cmd = 'helm repo add remote %s --username %s --password %s ' % (
+            self.chart_repo_url, self.helm_repo_username, self.helm_repo_password)
         else:
             helm_repo_add_cmd = 'helm repo add remote %s' % self.chart_repo_url
         if self.dry_run:
@@ -427,7 +483,7 @@ class EntrypointScriptBuilder(object):
         elif self.chart_repo_url.startswith('gs://'):
             helm_push_command = 'helm gcs push $PACKAGE remote'
         elif re.match('^(http|https):\/\/', self.chart_repo_url):
-            print ("CHART_REPO_URL protocol is http/https")
+            print("CHART_REPO_URL protocol is http/https")
             helm_push_command = self.handle_non_plugin_repos()
         else:
             raise Exception('Unsupported protocol in CHART_REPO_URL')
@@ -461,7 +517,8 @@ class EntrypointScriptBuilder(object):
             request.add_header('Authorization', 'Basic %s' % authB64)
             response = urllib.request.urlopen(request)
         except urllib.error.URLError as err:
-            print("\033[91mFailed to test your chart repository url, server responded with: %s %s \033[0m" % (err.code, err.reason))
+            print("\033[91mFailed to test your chart repository url, server responded with: %s %s \033[0m" % (
+            err.code, err.reason))
             if err.code == 401:
                 print("\033[91mPlease check the user name and password you specified for the Helm repository\033[0m")
             else:
@@ -473,7 +530,7 @@ class EntrypointScriptBuilder(object):
             sys.exit(1)
 
         print("\033[92mThe CHART_REPO_URL has been tested successfully\033[0m")
-        print ("Trying to infer Helm repository type from the response headers...")
+        print("Trying to infer Helm repository type from the response headers...")
 
         if self.is_artifactory_repo(response):
             return helm_push_command
@@ -484,7 +541,7 @@ class EntrypointScriptBuilder(object):
         try:
             headers = repoResponse.info()._headers
             for h in headers:
-                if ("X-Artifactory-Id" in h) or ("Server" in h and "Artifactory" in h[1]) or\
+                if ("X-Artifactory-Id" in h) or ("Server" in h and "Artifactory" in h[1]) or \
                         ("x-artifactory-id" in h) or ("server" in h and "artifactory" in h[1]):
                     print("\033[94mAn Artifactory Helm repository has been recognized\033[0m")
                     return True
