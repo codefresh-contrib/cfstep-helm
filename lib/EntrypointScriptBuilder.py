@@ -65,18 +65,21 @@ class EntrypointScriptBuilder(object):
             context_integration = self._get_variables_from_helm_repo_integration(self.helm_repository_context)
             repo_url = context_integration.get('repositoryUrl')
             integration_name = context_integration.get('name')
+            print("Using helm repo integration %s with URL %s" % (integration_name, repo_url))
             if repo_url is not None and integration_name is not None:
                 env['CF_CTX_'+integration_name+'_URL'] = repo_url
             variables = context_integration.get('variables')
-            if repo_url is not None and repo_url.startswith('gs://'):
+            if variables is None:
+                print("Variables is empty in the %s helm repo integration" % integration_name)
+            elif repo_url is not None and repo_url.startswith('gs://'):
                 self.google_application_credentials_json = variables.get('GOOGLE_APPLICATION_CREDENTIALS_JSON')
             elif repo_url is not None and repo_url.startswith('azsp://'):
                 self.client_id = variables.get('CLIENT_ID')
                 self.client_secret = variables.get('CLIENT_SECRET')
                 self.tenant = variables.get('TENANT')
             elif repo_url is not None and (repo_url.startswith('http://') or repo_url.startswith('https://')):
-                self.client_id = variables.get('HELMREPO_USERNAME')
-                self.client_secret = variables.get('HELMREPO_PASSWORD')
+                self.helm_repo_username = variables.get('HELMREPO_USERNAME')
+                self.helm_repo_password = variables.get('HELMREPO_PASSWORD')
 
         if self.helm_version.startswith('2'):
             print("\033[93mCodefresh will discontinue support for Helm 2 on July 16 2021\033[0m")

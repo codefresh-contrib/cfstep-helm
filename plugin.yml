@@ -42,3 +42,6 @@ envs:
   - name: 'CUSTOM_<name>'
     type: optional
     description: 'Value to provide to Helm (as --set). see usage information below.'
+  - name: HELM_REPOSITORY_CONTEXT
+    type: optional
+    description: 'Helm repository context to use (the name of the helm repository as configured in Codefresh)'
