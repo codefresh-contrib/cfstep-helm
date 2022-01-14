@@ -508,7 +508,7 @@ class EntrypointScriptBuilder(object):
     def handle_non_plugin_repos(self):
         helm_push_command = 'curl -u $HELMREPO_USERNAME:$HELMREPO_PASSWORD -T $PACKAGE ' + self.chart_repo_url
         if self.chart_subdir is not None:
-            if not self.chart_subdir.endswith('/'): #adding trailing slash to CHART_SUBDIR
+            if not self.chart_subdir.endswith('/'): # adding trailing slash to CHART_SUBDIR
                 self.chart_subdir += '/'
             helm_push_command += self.chart_subdir
         helm_push_command += '$(basename $PACKAGE)'
