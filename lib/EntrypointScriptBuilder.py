@@ -23,6 +23,7 @@ class EntrypointScriptBuilder(object):
         self.kube_context = env.get('KUBE_CONTEXT')
         self.chart_name = env.get('CHART_NAME')
         self.chart_ref = env.get('CHART_REF', env.get('CHART_NAME'))
+        self.chart_subdir = env.get('CHART_SUBDIR') #optional Artifactory subfolder (inside Helm repo)
         self.chart_repo_url = env.get('CHART_REPO_URL')
         self.skip_repo_credentials_validation = env.get('SKIP_REPO_CREDENTIALS_VALIDATION', 'false')
         self.helm_repo_username = env.get('HELMREPO_USERNAME')
@@ -508,7 +509,12 @@ class EntrypointScriptBuilder(object):
         return normalized_repo_url
 
     def handle_non_plugin_repos(self):
-        helm_push_command = 'curl -u $HELMREPO_USERNAME:$HELMREPO_PASSWORD -T $PACKAGE ' + self.chart_repo_url + '$(basename $PACKAGE)'
+        helm_push_command = 'curl -u $HELMREPO_USERNAME:$HELMREPO_PASSWORD -T $PACKAGE ' + self.chart_repo_url
+        if self.chart_subdir is not None:
+            if not self.chart_subdir.endswith('/'): # adding trailing slash to CHART_SUBDIR
+                self.chart_subdir += '/'
+            helm_push_command += self.chart_subdir
+        helm_push_command += '$(basename $PACKAGE)'
         normalized_repo_url = self._get_normalized_chart_repo_url()
         print("Performing test of the URL '%s' making an authenticated request to it..." % normalized_repo_url)
         if self.skip_repo_credentials_validation.upper() == 'TRUE':
