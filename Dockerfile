@@ -54,8 +54,7 @@ COPY lib/* /opt/lib/
 COPY build_entrypoint_script /opt/build_entrypoint_script
 
 # Install Python3
-RUN apk add --no-cache python3 \
-    && rm -rf /root/.cache
+RUN rm -rf /root/.cache
 
 ENV HELM_VERSION ${HELM_VERSION}
 
