@@ -38,7 +38,7 @@ RUN apt-get update \
     && apt-get install -y python3-venv \
     && make acceptance
 
-FROM codefresh/kube-helm:${HELM_VERSION}
+FROM codefresh/kube-helm-debian:${HELM_VERSION}
 
 ENV XDG_CACHE_HOME=/root/.helm
 ENV XDG_DATA_HOME=/root/.helm
@@ -54,8 +54,7 @@ COPY lib/* /opt/lib/
 COPY build_entrypoint_script /opt/build_entrypoint_script
 
 # Install Python3
-RUN apk add --no-cache python3 \
-    && rm -rf /root/.cache
+RUN rm -rf /root/.cache
 
 ENV HELM_VERSION ${HELM_VERSION}
 
