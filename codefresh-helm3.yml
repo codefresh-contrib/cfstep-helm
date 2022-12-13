@@ -89,7 +89,7 @@ steps:
       PushToDockerHub:
         registry: dockerhub
       PushToQuay:
-        image_name: "codefreshplugins/cfstep-helm"
+        image_name: "codefreshplugins/cfstep-helm-debian"
         tag: ${{HELM_VERSION}}
         candidate: ${{build_image}}
         registry: quay
