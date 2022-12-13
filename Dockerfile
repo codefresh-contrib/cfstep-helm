@@ -38,7 +38,7 @@ RUN apt-get update \
     && apt-get install -y python3-venv \
     && make acceptance
 
-FROM codefresh/kube-helm:${HELM_VERSION}
+FROM codefresh/kube-helm-debian:${HELM_VERSION}
 
 ENV XDG_CACHE_HOME=/root/.helm
 ENV XDG_DATA_HOME=/root/.helm

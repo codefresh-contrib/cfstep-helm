@@ -84,7 +84,7 @@ steps:
       condition:
         all:
           recursivelyInvoked: 'includes("${{HELM_VERSION}}", "${{") == false'
-          masterBranch: 'match("${{CF_BRANCH}}", "^master", true) == true'
+          masterBranch: 'match("${{CF_BRANCH}}", "^debian", true) == true'
     scale:
       PushToDockerHub:
         registry: dockerhub
