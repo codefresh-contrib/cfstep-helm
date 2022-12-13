@@ -64,7 +64,7 @@ steps:
     type: build
     registry: dockerhub
     working_directory: '${{clone}}'
-    image_name: '${{STEP_IMAGE}}'
+    image_name: '${{STEP_IMAGE}}-debian'
     tag: '${{HELM_VERSION}}-${{CF_SHORT_REVISION}}'
     build_arguments:
       - 'HELM_VERSION=${{HELM_VERSION}}'
