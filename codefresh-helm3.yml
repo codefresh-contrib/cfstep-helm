@@ -65,7 +65,7 @@ steps:
     registry: dockerhub
     working_directory: '${{clone}}'
     image_name: '${{STEP_IMAGE}}'
-    tag: '${{HELM_VERSION}}-${{CF_SHORT_REVISION}}-debian'
+    tag: '${{HELM_VERSION}}-${{CF_SHORT_REVISION}}'
     build_arguments:
       - 'HELM_VERSION=${{HELM_VERSION}}'
       - 'S3_PLUGIN_VERSION=0.9.2'
@@ -78,7 +78,7 @@ steps:
 
   push:
     type: push
-    tag: ${{HELM_VERSION}}-debian
+    tag: ${{HELM_VERSION}}
     candidate: ${{build_image}}
     when:
       condition:
@@ -90,8 +90,7 @@ steps:
         registry: dockerhub
       PushToQuay:
         image_name: "codefreshplugins/cfstep-helm"
-        tag: ${{HELM_VERSION}}-debian
+        tag: ${{HELM_VERSION}}
         candidate: ${{build_image}}
         registry: quay
-
 
