@@ -79,11 +79,15 @@ class EntrypointScriptBuilder(object):
                 self.client_secret = variables.get('CLIENT_SECRET')
                 self.tenant = variables.get('TENANT')
             elif repo_url is not None and (repo_url.startswith('http://') or repo_url.startswith('https://')):
-                self.helm_repo_username = variables.get('HELMREPO_USERNAME')
-                self.helm_repo_password = variables.get('HELMREPO_PASSWORD')
+                self.helm_repo_username = variables.get('CF_CTX_' + integration_name.replace('-', '_').upper() + '_HELMREPO_USERNAME')
+                if self.helm_repo_username is None:
+                    self.helm_repo_username = variables.get('HELMREPO_USERNAME')
+                self.helm_repo_password = variables.get('CF_CTX_' + integration_name.replace('-', '_').upper() + '_HELMREPO_PASSWORD')
+                if self.helm_repo_password is None:
+                    self.helm_repo_password = variables.get('HELMREPO_PASSWORD')
 
         if self.helm_version.startswith('2'):
-            print("\033[93mCodefresh will discontinue support for Helm 2 on July 16 2021\033[0m")
+            print("\033[93mCodefresh discontinued support for Helm 2 on July 16 2021\033[0m")
 
         # Save chart data in files
         if self.chart is not None:
@@ -175,12 +179,18 @@ class EntrypointScriptBuilder(object):
                                                                'https://00000000-0000-0000-0000-000000000000:%s@' % self.azure_helm_token,
                                                                1) + '/helm/v1/repo'
 
-        helm_repo_username = env.get('HELMREPO_USERNAME')
-        helm_repo_password = env.get('HELMREPO_PASSWORD')
         for key, val in sorted(env.items()):
             key_upper = key.upper()
             if key_upper.startswith('CF_CTX_') and key_upper.endswith('_URL'):
-                repo_name = key_upper.replace('CF_CTX_', '', 1).replace('_URL', '', 1).replace('_', '-').lower()
+                context_name = key_upper.replace('CF_CTX_', '', 1).replace('_URL', '', 1)
+                helm_repo_username = env.get('CF_CTX_' + context_name + '_HELMREPO_USERNAME')
+                if helm_repo_username is None:
+                    helm_repo_username = env.get('HELMREPO_USERNAME')
+                helm_repo_password = env.get('CF_CTX_' + context_name + '_HELMREPO_PASSWORD')
+                if helm_repo_password is None:
+                    helm_repo_password = env.get('HELMREPO_PASSWORD')
+
+                repo_name = context_name.replace('_', '-').lower()
                 repo_url = val
                 if not repo_url.endswith('/'):
                     repo_url += '/'
@@ -318,10 +328,15 @@ class EntrypointScriptBuilder(object):
 
         # Add Helm repos locally
         for repo_name, repo_url in sorted(self.helm_repos.items()):
-            if self.credentials_in_arguments and (self.helm_repo_username is not None) and (
-                    self.helm_repo_password is not None):
+            helm_repo_username = os.getenv('CF_CTX_' + repo_name.replace('-', '_').upper() + '_HELMREPO_USERNAME')
+            if helm_repo_username is None:
+                helm_repo_username = self.helm_repo_username
+            helm_repo_password = os.getenv('CF_CTX_' + repo_name.replace('-', '_').upper() + '_HELMREPO_PASSWORD')
+            if helm_repo_password is None:
+                helm_repo_password = self.helm_repo_password
+            if self.credentials_in_arguments and (helm_repo_username is not None) and (helm_repo_password is not None):
                 helm_repo_add_cmd = 'helm repo add %s %s --username %s --password %s ' % (
-                repo_name, repo_url, self.helm_repo_username, self.helm_repo_password)
+                repo_name, repo_url, helm_repo_username, helm_repo_password)
             else:
                 helm_repo_add_cmd = 'helm repo add %s %s' % (repo_name, repo_url)
             if self.dry_run:
