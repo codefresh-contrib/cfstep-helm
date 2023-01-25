@@ -49,6 +49,7 @@ class EntrypointScriptBuilder(object):
         self.tenant = env.get('TENANT')
         self.helm_repository_context = env.get('HELM_REPOSITORY_CONTEXT')
         self.primary_helm_context = env.get('PRIMARY_HELM_CONTEXT')
+        self.azure_helm_token = None
 
         credentials_in_arguments_str = env.get('CREDENTIALS_IN_ARGUMENTS', 'false')
         if credentials_in_arguments_str.upper() == 'TRUE':
@@ -64,7 +65,6 @@ class EntrypointScriptBuilder(object):
 
         self._extract_helm_repos(env)
 
-        self.azure_helm_token = None
         if self.helm_repository_context:
             context_integration = self._get_variables_from_helm_repo_integration(self.helm_repository_context)
             repo_url = context_integration.get('repositoryUrl')
