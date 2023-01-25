@@ -157,7 +157,7 @@ class EntrypointScriptBuilder(object):
             string_values[cli_set_key] = val
         self.string_values = string_values
 
-        if self.primary_helm_context is not None:
+        if (self.primary_helm_context is not None) and (self.helm_repository_context is None):
             self.chart_repo_url = env.get('CF_CTX_' + self.primary_helm_context.replace('-', '_').upper() + '_URL')
             helm_repo_username = env.get('CF_CTX_' + self.primary_helm_context.replace('-', '_').upper() + '_HELMREPO_USERNAME')
             self.helm_repo_username = helm_repo_username if helm_repo_username is not None else env.get('HELMREPO_USERNAME')
