@@ -158,10 +158,10 @@ class EntrypointScriptBuilder(object):
         self.string_values = string_values
 
         if (self.primary_helm_context is not None) and (self.helm_repository_context is None):
-            self.chart_repo_url = env.get('CF_CTX_' + self.primary_helm_context.replace('-', '_').upper() + '_URL')
-            helm_repo_username = env.get('CF_CTX_' + self.primary_helm_context.replace('-', '_').upper() + '_HELMREPO_USERNAME')
+            self.chart_repo_url = env.get('CF_CTX_' + self.primary_helm_context + '_URL')
+            helm_repo_username = env.get('CF_CTX_' + self.primary_helm_context.upper() + '_HELMREPO_USERNAME')
             self.helm_repo_username = helm_repo_username if helm_repo_username is not None else env.get('HELMREPO_USERNAME')
-            helm_repo_password = env.get('CF_CTX_' + self.primary_helm_context.replace('-', '_').upper() + '_HELMREPO_PASSWORD')
+            helm_repo_password = env.get('CF_CTX_' + self.primary_helm_context.upper() + '_HELMREPO_PASSWORD')
             self.helm_repo_password = helm_repo_password if helm_repo_password is not None else env.get('HELMREPO_PASSWORD')
 
         # Workaround a bug in Helm where url that doesn't end with / breaks --repo flags
@@ -208,7 +208,7 @@ class EntrypointScriptBuilder(object):
                 if self.helm_repo_password is None:
                     self.helm_repo_password = env.get('HELMREPO_PASSWORD')
 
-                repo_name = context_name.replace('_', '-').lower()
+                repo_name = key[7:len(key)-4]
                 repo_url = val
                 if not repo_url.endswith('/'):
                     repo_url += '/'
@@ -337,10 +337,10 @@ class EntrypointScriptBuilder(object):
 
         # Add Helm repos locally
         for repo_name, repo_url in sorted(self.helm_repos.items()):
-            helm_repo_username = os.getenv('CF_CTX_' + repo_name.replace('-', '_').upper() + '_HELMREPO_USERNAME')
+            helm_repo_username = os.getenv('CF_CTX_' + repo_name.upper() + '_HELMREPO_USERNAME')
             if helm_repo_username is None:
                 helm_repo_username = os.getenv('HELMREPO_USERNAME')
-            helm_repo_password = os.getenv('CF_CTX_' + repo_name.replace('-', '_').upper() + '_HELMREPO_PASSWORD')
+            helm_repo_password = os.getenv('CF_CTX_' + repo_name.upper() + '_HELMREPO_PASSWORD')
             if helm_repo_password is None:
                 helm_repo_password = os.getenv('HELMREPO_PASSWORD')
             if self.credentials_in_arguments and (helm_repo_username is not None) and (helm_repo_password is not None):

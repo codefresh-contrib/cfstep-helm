@@ -127,3 +127,23 @@ Should build right install command. Without primary_helm_context argument and cr
     Run with env   ${env}
     Should have succeeded
     Output contains   helm upgrade tomcat tomcat --install --reset-values --repo http://repo2.com/ --username aaa --password 111 --namespace default
+
+Check register
+    &{env}=   Create dictionary
+    Set to dictionary   ${env}  ACTION   install
+    Set to dictionary   ${env}  KUBE_CONTEXT   my-context
+    Set to dictionary   ${env}  CHART_NAME   tomcat
+    Set to dictionary   ${env}  RELEASE_NAME   tomcat
+    Set to dictionary   ${env}  CF_CTX_REPO1_URL   http://repo1.com
+    Set to dictionary   ${env}  CF_CTX_RE-PO_2_HELMREPO_PASSWORD   111
+    Set to dictionary   ${env}  CF_CTX_RE-PO_2_HELMREPO_USERNAME   aaa
+    Set to dictionary   ${env}  CF_CTX_RE-po_2_URL   http://repo2.com
+    Set to dictionary   ${env}  HELMREPO_PASSWORD   pass
+    Set to dictionary   ${env}  HELMREPO_USERNAME   test
+    Set to dictionary   ${env}  CREDENTIALS_IN_ARGUMENTS   true
+    Set to dictionary   ${env}  PRIMARY_HELM_CONTEXT   RE-po_2
+    Set to dictionary   ${env}  NAMESPACE   default
+    Set to dictionary   ${env}  DRY_RUN   true
+    Run with env   ${env}
+    Should have succeeded
+    Output contains   helm upgrade tomcat tomcat --install --reset-values --repo http://repo2.com/ --username aaa --password 111 --namespace default
