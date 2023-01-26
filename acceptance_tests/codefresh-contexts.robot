@@ -68,8 +68,8 @@ Two repo should be added with right credentials for auth action with credentials
     Set to dictionary   ${env}  DRY_RUN   true
     Run with env   ${env}
     Should have succeeded
-    Output contains   helm repo add repo1 http://repo1.com/ --username test --password pass
-    Output contains   helm repo add repo2 http://repo2.com/ --username aaa --password 111
+    Output contains   helm repo add REPO1 http://repo1.com/ --username test --password pass
+    Output contains   helm repo add REPO2 http://repo2.com/ --username aaa --password 111
 
 Two repo should be added with right credentials for auth action
     &{env}=   Create dictionary
@@ -85,8 +85,8 @@ Two repo should be added with right credentials for auth action
     Set to dictionary   ${env}  DRY_RUN   true
     Run with env   ${env}
     Should have succeeded
-    Output contains   helm repo add repo1 http://test:*****@repo1.com/
-    Output contains   helm repo add repo2 http://aaa:*****@repo2.com/
+    Output contains   helm repo add REPO1 http://test:*****@repo1.com/
+    Output contains   helm repo add REPO2 http://aaa:*****@repo2.com/
 
 
 Should build right install command. With primary_helm_context argument and credentials in arguments
