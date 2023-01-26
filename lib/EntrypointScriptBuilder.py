@@ -83,10 +83,10 @@ class EntrypointScriptBuilder(object):
                 self.client_secret = variables.get('CLIENT_SECRET')
                 self.tenant = variables.get('TENANT')
             elif repo_url is not None and (repo_url.startswith('http://') or repo_url.startswith('https://')):
-                self.helm_repo_username = variables.get('CF_CTX_' + integration_name.replace('-', '_').upper() + '_HELMREPO_USERNAME')
+                self.helm_repo_username = variables.get('CF_CTX_' + integration_name.upper() + '_HELMREPO_USERNAME')
                 if self.helm_repo_username is None:
                     self.helm_repo_username = variables.get('HELMREPO_USERNAME')
-                self.helm_repo_password = variables.get('CF_CTX_' + integration_name.replace('-', '_').upper() + '_HELMREPO_PASSWORD')
+                self.helm_repo_password = variables.get('CF_CTX_' + integration_name.upper() + '_HELMREPO_PASSWORD')
                 if self.helm_repo_password is None:
                     self.helm_repo_password = variables.get('HELMREPO_PASSWORD')
 
