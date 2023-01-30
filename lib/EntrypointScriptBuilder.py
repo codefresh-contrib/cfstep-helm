@@ -239,8 +239,10 @@ class EntrypointScriptBuilder(object):
                                                 1) + 'helm/v1/repo'
 
                 helm_repos[repo_name] = repo_url
-                self.chart_repo_url = repo_url
+                if self.chart_repo_url is None:
+                    chart_repo_url = repo_url
 
+        self.chart_repo_url = chart_repo_url
         self.helm_repos = helm_repos
 
     def _get_variables_from_helm_repo_integration(self, helm_repo_integration):
