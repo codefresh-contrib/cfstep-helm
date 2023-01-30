@@ -49,7 +49,7 @@ class EntrypointScriptBuilder(object):
         self.tenant = env.get('TENANT')
         self.helm_repository_context = env.get('HELM_REPOSITORY_CONTEXT')
         self.primary_helm_context = env.get('PRIMARY_HELM_CONTEXT')
-        self.use_repos_for_auth_action = env.get('USE_REPOS_FOR_AUTH_ACTION', 'false')
+        self.use_repos_for_auth_action = (env.get('USE_REPOS_FOR_AUTH_ACTION', '').upper() == 'TRUE')
         self.azure_helm_token = None
 
         credentials_in_arguments_str = env.get('CREDENTIALS_IN_ARGUMENTS', 'false')
@@ -203,9 +203,8 @@ class EntrypointScriptBuilder(object):
 
         for key, val in sorted(env.items()):
             if key.startswith('CF_CTX_') and key.endswith('_URL'):
-                repo_name = key[7:len(key) - 4]
-                repo_url, self.helm_repo_username, self.helm_repo_password = \
-                    self._get_repo_credentials(repo_name, env)
+                repo_name = key[7:len(key) - 4]  # CF_CTX_repo_name_URL
+                repo_url, self.helm_repo_username, self.helm_repo_password = self._get_repo_credentials(repo_name, env)
 
                 if not repo_url.endswith('/'):
                     repo_url += '/'
@@ -333,14 +332,9 @@ class EntrypointScriptBuilder(object):
                 'Must set CHART_REF in the environment (this should be a reference to the chart as Helm CLI expects)')
 
         # Add Helm repos locally
-        if (self.use_repos_for_auth_action.upper() == 'TRUE') or (self.action != 'auth'):
+        if self.use_repos_for_auth_action or (self.action != 'auth'):
             for repo_name, repo_url in sorted(self.helm_repos.items()):
-                helm_repo_username = os.getenv('CF_CTX_' + repo_name.upper() + '_HELMREPO_USERNAME')
-                if helm_repo_username is None:
-                    helm_repo_username = os.getenv('HELMREPO_USERNAME')
-                helm_repo_password = os.getenv('CF_CTX_' + repo_name.upper() + '_HELMREPO_PASSWORD')
-                if helm_repo_password is None:
-                    helm_repo_password = os.getenv('HELMREPO_PASSWORD')
+                _, helm_repo_username, helm_repo_password = self._get_repo_credentials(repo_name, os.environ)
                 if self.credentials_in_arguments and (helm_repo_username is not None) and (helm_repo_password is not None):
                     helm_repo_add_cmd = 'helm repo add %s %s --username %s --password %s ' % (
                         repo_name, repo_url, helm_repo_username, helm_repo_password)
