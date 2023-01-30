@@ -261,7 +261,7 @@ class EntrypointScriptBuilderTest(unittest.TestCase):
         expect += 'export HELM_REPO_AUTH_HEADER=Authorization\n'
         expect += 'kubectl config use-context "local"\n'
         expect += 'helm version --short -c\n'
-        expect += 'helm repo add helmsp https://00000000-0000-0000-0000-000000000000:accessToken@test.azure.io/helm/v1/repo\n'
+        expect += 'helm repo add helmSP https://00000000-0000-0000-0000-000000000000:accessToken@test.azure.io/helm/v1/repo\n'
         expect += 'helm upgrade tomcat tomcat --install --reset-values --repo https://00000000-0000-0000-0000-000000000000:accessToken@test.azure.io/helm/v1/repo/ '
         expect += '--version 0.4.3 --namespace default --set containers.node.env.secret.VALUE1=value1, '
         expect += '--set containers.node.env.secret.VALUE2="foo:bar;baz:qux;" '

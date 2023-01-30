@@ -64,8 +64,6 @@ class EntrypointScriptBuilder(object):
         else:
             self.skip_stable = False
 
-        self._extract_helm_repos(env)
-
         if self.helm_repository_context:
             context_integration = self._get_variables_from_helm_repo_integration(self.helm_repository_context)
             repo_url = context_integration.get('repositoryUrl')
@@ -86,6 +84,8 @@ class EntrypointScriptBuilder(object):
             elif repo_url is not None and (repo_url.startswith('http://') or repo_url.startswith('https://')):
                 _, self.helm_repo_username, self.helm_repo_password = \
                     self._get_repo_credentials(integration_name, variables)
+
+        self._extract_helm_repos(env)
 
         if self.helm_version.startswith('2'):
             print("\033[93mCodefresh discontinued support for Helm 2 on July 16 2021\033[0m")
@@ -204,15 +204,15 @@ class EntrypointScriptBuilder(object):
         for key, val in sorted(env.items()):
             if key.startswith('CF_CTX_') and key.endswith('_URL'):
                 repo_name = key[7:len(key) - 4]  # CF_CTX_repo_name_URL
-                repo_url, self.helm_repo_username, self.helm_repo_password = self._get_repo_credentials(repo_name, env)
+                repo_url, repo_username, repo_password = self._get_repo_credentials(repo_name, env)
 
                 if not repo_url.endswith('/'):
                     repo_url += '/'
 
                 if repo_url.startswith('http://') or repo_url.startswith('https://'):
-                    if not self.credentials_in_arguments and (self.helm_repo_username is not None) and (
-                            self.helm_repo_password is not None):
-                        repo_url = repo_url.replace('://', '://%s:%s@' % (self.helm_repo_username, self.helm_repo_password), 1)
+                    if not self.credentials_in_arguments and (repo_username is not None) and (
+                            repo_password is not None):
+                        repo_url = repo_url.replace('://', '://%s:%s@' % (repo_username, repo_password), 1)
 
                 # Modify azure URL to use https and contain token
                 elif repo_url.startswith('az://'):
@@ -240,6 +240,8 @@ class EntrypointScriptBuilder(object):
                 helm_repos[repo_name] = repo_url
                 if self.chart_repo_url is None:
                     chart_repo_url = repo_url
+                    self.helm_repo_username = repo_username
+                    self.helm_repo_password = repo_password
 
         self.chart_repo_url = chart_repo_url
         self.helm_repos = helm_repos
