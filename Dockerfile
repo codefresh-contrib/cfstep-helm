@@ -2,12 +2,14 @@ ARG HELM_VERSION
 ARG S3_PLUGIN_VERSION
 ARG GCS_PLUGIN_VERSION
 ARG PUSH_PLUGIN_VERSION
+ARG HELM_DIFF_VERSION
 
 FROM golang:latest as setup
 ARG HELM_VERSION
 ARG S3_PLUGIN_VERSION
 ARG GCS_PLUGIN_VERSION
 ARG PUSH_PLUGIN_VERSION
+ARG HELM_DIFF_VERSION
 
 # for helm 3
 ENV XDG_CACHE_HOME=/root/.helm
@@ -22,10 +24,12 @@ RUN curl -L "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz" -o he
     && helm plugin install https://github.com/hypnoglow/helm-s3.git --version=${S3_PLUGIN_VERSION} \
     && helm plugin install https://github.com/nouney/helm-gcs.git --version=${GCS_PLUGIN_VERSION} \
     && helm plugin install https://github.com/chartmuseum/helm-push.git --version=${PUSH_PLUGIN_VERSION} \
+    && helm plugin install https://github.com/databus23/helm-diff.git --version=${HELM_DIFF_VERSION} \
     && bash -c 'if [[ "${HELM_VERSION}" > "3.3.1" ]]; then \
     rm -rf /root/.helm/helm/plugins/https-github.com-hypnoglow-helm-s3.git; \
     rm -rf /root/.helm/helm/plugins/https-github.com-nouney-helm-gcs.git; \
     rm -rf /root/.helm/helm/plugins/https-github.com-chartmuseum-helm-push.git; \
+    rm -rf /root/.helm/helm/plugins/https-github.com-databus23-helm-diff.git; \
     else echo "no need to remove unnecessary directories in the helm plugins directory"; fi'
 
 # Run acceptance tests
