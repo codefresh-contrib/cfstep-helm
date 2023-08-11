@@ -6,7 +6,7 @@ steps:
     commands:
       - |-
         cat <<EOF > helmVersionsList
-        3.0.0
+        3.0.1
     when:
       condition:
         all:
