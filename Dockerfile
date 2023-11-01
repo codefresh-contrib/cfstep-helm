@@ -39,7 +39,7 @@ COPY lib/ lib/
 COPY build_entrypoint_script build_entrypoint_script
 COPY acceptance_tests/ acceptance_tests/
 RUN apt-get update \
-    && apt-get install -y python3-venv=3.8.2-0ubuntu2 \
+    && apt-get install -y python3-venv \
     && make acceptance
 
 FROM codefresh/kube-helm:${HELM_VERSION}
