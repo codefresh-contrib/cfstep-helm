@@ -1,4 +1,4 @@
-ACCEPTANCE_PY_REQUIRES = robotframework==3.0.4
+ACCEPTANCE_PY_REQUIRES = robotframework==6.0.2
 
 .PHONY: acceptance
 acceptance:
