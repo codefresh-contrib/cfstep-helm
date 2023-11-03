@@ -147,7 +147,7 @@ steps:
       condition:
         all:
           recursivelyInvoked: 'includes("${{HELM_VERSION}}", "${{") == false'
-          masterBranch: 'match("${{CF_BRANCH}}", "master", true) == false'
+          masterBranch: 'match("${{CF_BRANCH}}", "^master", true) == false'
 
   push_to_master:
     type: push
@@ -157,7 +157,7 @@ steps:
       condition:
         all:
           recursivelyInvoked: 'includes("${{HELM_VERSION}}", "${{") == false'
-          masterBranch: 'match("${{CF_BRANCH}}", "master", true) == true'
+          masterBranch: 'match("${{CF_BRANCH}}", "^master", true) == true'
     scale:
       PushToDockerHub:
         registry: dockerhub
