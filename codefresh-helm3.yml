@@ -120,6 +120,7 @@ steps:
       condition:
         all:
           recursivelyInvoked: 'includes("${{HELM_VERSION}}", "${{") == false'
+          masterBranch: 'match("${{CF_BRANCH}}", "^master", true) == false'
     scale:
       PushToDevDockerHub:
         registry: dockerhub
