@@ -132,6 +132,7 @@ steps:
   run_e2e:
     stage: 'build'
     type: codefresh-run
+    fail_fast: false
     arguments:
       FOLLOW_LOGS: false
       PIPELINE_ID: Helm3/helm3-e2e
