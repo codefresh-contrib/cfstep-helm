@@ -25,7 +25,7 @@ RUN curl -L "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz" -o he
     && helm plugin install https://github.com/nouney/helm-gcs.git --version=${GCS_PLUGIN_VERSION} \
     && helm plugin install https://github.com/chartmuseum/helm-push.git --version=${PUSH_PLUGIN_VERSION} \
     && helm plugin install https://github.com/databus23/helm-diff --version=${HELM_DIFF_VERSION} \
-    && bash -c 'if [[ "${HELM_VERSION}" > "3.3.1" ]]; then \
+    && bash -c 'if [[ "$HELM_VERSION" = "`echo -e "$HELM_VERSION\n3.3.1" | sort -V -r | head -n1`" ]]; then \
     rm -rf /root/.helm/helm/plugins/https-github.com-hypnoglow-helm-s3.git; \
     rm -rf /root/.helm/helm/plugins/https-github.com-nouney-helm-gcs.git; \
     rm -rf /root/.helm/helm/plugins/https-github.com-chartmuseum-helm-push.git; \
