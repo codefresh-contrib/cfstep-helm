@@ -46,7 +46,7 @@ Run with SKIP_CF_STABLE_HELM_REPO
     Set to dictionary   ${env}  SKIP_CF_STABLE_HELM_REPO   true
     Run with env   ${env}
     Should have succeeded
-    Output contains   helm version --short -c
+    Output contains   helm version --short
     Output does not contain   helm repo add
 
 
