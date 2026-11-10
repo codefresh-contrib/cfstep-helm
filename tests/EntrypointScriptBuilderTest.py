@@ -471,3 +471,28 @@ class EntrypointScriptBuilderTest(unittest.TestCase):
 
         self.assertEqual(cm.exception.code, 1)
 
+    def test_version_command_helm3(self):
+        env = {'ACTION': 'auth', 'KUBE_CONTEXT': 'local', 'HELM_VERSION': '3.14.1', 'SKIP_CF_STABLE_HELM_REPO': 'true'}
+        script_source = EntrypointScriptBuilder(env).build()
+        self.assertIn('helm version --short\n', script_source + '\n')
+        self.assertNotIn('helm version --short -c', script_source)
+
+    def test_version_command_helm4(self):
+        env = {'ACTION': 'auth', 'KUBE_CONTEXT': 'local', 'HELM_VERSION': '4.2.1', 'SKIP_CF_STABLE_HELM_REPO': 'true'}
+        builder = EntrypointScriptBuilder(env)
+        script_source = builder.build()
+        self.assertEqual(type(builder.helm_command_builder).__name__, 'Helm3CommandBuilder')
+        self.assertIn('helm version --short\n', script_source + '\n')
+        self.assertNotIn('helm version --short -c', script_source)
+
+    def test_version_command_helm4_v_prefix(self):
+        env = {'ACTION': 'auth', 'KUBE_CONTEXT': 'local', 'HELM_VERSION': 'v4.2.1', 'SKIP_CF_STABLE_HELM_REPO': 'true'}
+        builder = EntrypointScriptBuilder(env)
+        script_source = builder.build()
+        self.assertEqual(type(builder.helm_command_builder).__name__, 'Helm3CommandBuilder')
+        self.assertNotIn('helm version --short -c', script_source)
+
+    def test_version_command_helm2(self):
+        env = {'ACTION': 'auth', 'KUBE_CONTEXT': 'local', 'HELM_VERSION': '2.17.0', 'SKIP_CF_STABLE_HELM_REPO': 'true'}
+        script_source = EntrypointScriptBuilder(env).build()
+        self.assertIn('helm version --short -c', script_source)

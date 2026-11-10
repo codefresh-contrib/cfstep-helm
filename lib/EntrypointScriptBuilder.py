@@ -581,8 +581,17 @@ class EntrypointScriptBuilder(object):
             return None
         return False
 
+    def _helm_major(self):
+        # "4.2.1" or "v4.2.1" -> 4; anything non-numeric keeps the previous (Helm 2) behaviour
+        try:
+            return int(self.helm_version.lstrip('vV').split('.')[0])
+        except ValueError:
+            return 2
+
     def _helm_3(self):
-        return self.helm_version.startswith('3.')
+        # Helm 3 or later: Helm 4 uses the same commands as Helm 3
+        version = self.helm_version.lstrip('vV')
+        return version.startswith('3.') or self._helm_major() >= 4
 
     def _select_helm_command_builder(self):
         if self._helm_3():
@@ -591,7 +600,8 @@ class EntrypointScriptBuilder(object):
             return Helm2CommandBuilder()
 
     def _build_version_command(self):
-        build_command = 'helm version --short -c'
+        # `-c`/`--client` is a no-op on Helm 3 and was removed in Helm 4 ("unknown shorthand flag: 'c'")
+        build_command = 'helm version --short' if self._helm_3() else 'helm version --short -c'
         if self.dry_run:
             build_command = 'echo ' + build_command
 
