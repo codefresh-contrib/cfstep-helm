@@ -1,0 +1,21 @@
+Dockerfile.aarch64
+  s_40a26a0e0ef5e8::t_98014e7b636a85 1-67
+Dockerfile.helm2
+  s_40a26a0e0ef5e8::t_9ccd170012f2e1 1-43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "df36dce43dd4cfda66d96fd432586a124fe5805a",
+  "prompts": {},
+  "sessions": {
+    "s_40a26a0e0ef5e8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_40a26a0e0ef5e8",
+        "model": "unknown"
+      },
+      "human_author": "Bohdan Pysarenko <bohdan.pisarenko@octopus.com>"
+    }
+  }
+}
