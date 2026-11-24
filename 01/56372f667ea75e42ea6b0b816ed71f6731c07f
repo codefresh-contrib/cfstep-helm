@@ -1,0 +1,22 @@
+Dockerfile
+  s_cf85d17cddab96::t_ebe6b9c233fb10 7
+codefresh-helm3.yml
+  s_cf85d17cddab96::t_e2354aaf901c01 126
+  s_cf85d17cddab96::t_a32ebcea02f547 64-71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0156372f667ea75e42ea6b0b816ed71f6731c07f",
+  "prompts": {},
+  "sessions": {
+    "s_cf85d17cddab96": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5512245a-9635-49e6-ae9b-cf9ca2921c89",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Bohdan Pysarenko <bohdan.pisarenko@octopus.com>"
+    }
+  }
+}
