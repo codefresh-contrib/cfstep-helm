@@ -1,0 +1,14 @@
+codefresh-helm3.yml
+  h_48b74706cf95a4 107
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2714b7d2f96327f225489469b318129f5b8eff77",
+  "prompts": {},
+  "humans": {
+    "h_48b74706cf95a4": {
+      "author": "Bohdan Pysarenko <bohdan.pisarenko@octopus.com>"
+    }
+  }
+}
