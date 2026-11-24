@@ -1,6 +1,6 @@
 ARG HELM_VERSION
 
-FROM arm64v8/golang:1.12-buster as setup
+FROM arm64v8/golang:1.26.10-trixie as setup
 ARG HELM_VERSION
 RUN echo "HELM_VERSION is set to: ${HELM_VERSION}" && mkdir /temp
 RUN curl -L "https://get.helm.sh/helm-v${HELM_VERSION}-linux-arm64.tar.gz" -o helm.tar.gz \
