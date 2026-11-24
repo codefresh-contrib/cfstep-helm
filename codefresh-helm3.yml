@@ -83,7 +83,7 @@ steps:
     type: git-clone
     arguments:
       repo: '${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}'
-      git: github
+      git: github-vadym
       revision: '${{CF_REVISION}}'
       when:
         condition:
